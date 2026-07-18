@@ -12,13 +12,40 @@ from sqlalchemy.engine.reflection import Inspector
 
 models.Base.metadata.create_all(bind=engine)
 
+from sqlalchemy import inspect
+from sqlalchemy.types import Integer, String, Float, Boolean, DateTime
+
+def get_column_type_str(col_type):
+    if isinstance(col_type, Integer):
+        return "INTEGER"
+    elif isinstance(col_type, String):
+        return "VARCHAR"
+    elif isinstance(col_type, Float):
+        return "FLOAT"
+    elif isinstance(col_type, Boolean):
+        return "BOOLEAN"
+    elif isinstance(col_type, DateTime):
+        return "TIMESTAMP"
+    return None
+
 try:
-    inspector = Inspector.from_engine(engine)
-    if "pricing_settings" in inspector.get_table_names():
-        columns = [col['name'] for col in inspector.get_columns("pricing_settings")]
-        if "service_active" not in columns:
-            with engine.begin() as conn:
-                conn.execute(text("ALTER TABLE pricing_settings ADD COLUMN service_active BOOLEAN DEFAULT true"))
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+    with engine.begin() as conn:
+        for table_name, table in models.Base.metadata.tables.items():
+            if table_name in existing_tables:
+                existing_columns = [col['name'] for col in inspector.get_columns(table_name)]
+                for col_name, column in table.columns.items():
+                    if col_name not in existing_columns:
+                        type_str = get_column_type_str(column.type)
+                        if type_str:
+                            default_clause = ""
+                            if isinstance(column.type, Boolean):
+                                default_clause = " DEFAULT true" if col_name == "service_active" else " DEFAULT false"
+                            
+                            sql = f"ALTER TABLE {table_name} ADD COLUMN {col_name} {type_str}{default_clause}"
+                            print(f"Executing migration: {sql}")
+                            conn.execute(text(sql))
 except Exception as e:
     print("Auto-migration failed:", e)
 app = FastAPI(title="Campus Copies API")

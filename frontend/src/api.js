@@ -12,4 +12,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      if (window.location.pathname.startsWith('/admin')) {
+        window.location.href = '/admin/login';
+      } else {
+        window.location.href = '/student/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
