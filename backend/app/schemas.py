@@ -52,6 +52,7 @@ class PricingSettingsUpdate(BaseModel):
     gst_percent: float
     upi_id: Optional[str] = None
     qr_code_path: Optional[str] = None
+    service_active: Optional[bool] = True
 
 class PricingSettingsResponse(PricingSettingsUpdate):
     id: int
@@ -86,6 +87,8 @@ class OrderResponse(BaseModel):
     id: int
     order_number: str
     student_id: int
+    student_name: Optional[str] = None
+    student_department: Optional[str] = None
     original_filename: str
     pages: int
     copies: int
@@ -103,11 +106,17 @@ class OrderResponse(BaseModel):
     file_path: str
     payment_screenshot_path: Optional[str] = None
     payment_transaction_id: Optional[str] = None
+    feedback_rating: Optional[int] = None
+    feedback_text: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+class OrderFeedback(BaseModel):
+    rating: int
+    text: Optional[str] = None
 
 class PaymentSubmit(BaseModel):
     payment_transaction_id: str

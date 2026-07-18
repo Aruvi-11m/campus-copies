@@ -215,3 +215,51 @@ def log_sales_and_profit(db: Session, order: models.Order):
         inventory_item.current_stock -= (billable_pages * order.copies)
         
     db.commit()
+
+@router.put("/orders/{order_id}/cancel", response_model=schemas.OrderResponse)
+def cancel_order_admin(
+    order_id: int, 
+    db: Session = Depends(database.get_db),
+    admin: models.Admin = Depends(deps.get_current_admin)
+):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    old_status = order.status
+    order.status = "CANCELLED"
+    
+    # Audit Log
+    db.add(models.AuditLog(
+        user_type="admin",
+        user_identifier=admin.username,
+        action="CANCEL_ORDER",
+        details=f"Order {order.order_number} cancelled by admin (was {old_status})"
+    ))
+
+    db.commit()
+    db.refresh(order)
+    return order
+
+@router.delete("/orders/{order_id}")
+def delete_order_admin(
+    order_id: int, 
+    db: Session = Depends(database.get_db),
+    admin: models.Admin = Depends(deps.get_current_admin)
+):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    db.delete(order)
+    
+    # Audit Log
+    db.add(models.AuditLog(
+        user_type="admin",
+        user_identifier=admin.username,
+        action="DELETE_ORDER",
+        details=f"Order {order.order_number} deleted entirely"
+    ))
+
+    db.commit()
+    return {"detail": "Order deleted successfully"}

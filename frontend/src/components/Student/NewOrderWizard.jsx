@@ -21,14 +21,29 @@ export default function NewOrderWizard() {
   const [transactionId, setTransactionId] = useState('');
   const [screenshot, setScreenshot] = useState(null);
   const [screenshotUrl, setScreenshotUrl] = useState(null);
+  
+  const [serviceActive, setServiceActive] = useState(true);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     if (pages > 0) {
       calculateCost();
     }
   }, [pages, printType, color, binding, copies]);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await api.get('/public/settings');
+      setServiceActive(res.data.service_active ?? true);
+    } catch (err) {
+      console.error('Failed to fetch settings', err);
+    }
+  };
 
   const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
@@ -98,6 +113,13 @@ export default function NewOrderWizard() {
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8 border border-gray-200">
       <h1 className="text-2xl font-bold mb-6 text-gray-900">New Print Order</h1>
       
+      {!serviceActive && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <p className="text-red-700 font-bold">Service is not available at the moment.</p>
+          <p className="text-red-600 mt-1">Contact ARV for further on-demand orders.</p>
+        </div>
+      )}
+      
       {/* Stepper logic */}
       <div className="flex mb-8 items-center justify-between">
         {['Upload PDF', 'Options & Preview', 'Confirm', 'Payment'].map((label, index) => (
@@ -113,9 +135,9 @@ export default function NewOrderWizard() {
 
       {step === 1 && (
         <div className="space-y-4">
-          <label className="block border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-campus-blue">
-            <span className="text-gray-500 block mb-2">Click to select PDF</span>
-            <input type="file" accept="application/pdf" className="hidden" onChange={handleFileChange} />
+          <label className={`block border-2 border-dashed rounded-lg p-12 text-center ${!serviceActive ? 'bg-gray-100 border-gray-200 cursor-not-allowed' : 'border-gray-300 cursor-pointer hover:border-campus-blue'}`}>
+            <span className="text-gray-500 block mb-2">{!serviceActive ? 'Upload disabled' : 'Click to select PDF'}</span>
+            <input type="file" accept="application/pdf" className="hidden" onChange={handleFileChange} disabled={!serviceActive} />
           </label>
           {file && <p className="text-sm text-green-600 font-medium text-center">Selected: {file.name} ({pages} pages)</p>}
           <button disabled={!file} onClick={() => setStep(2)} className="w-full bg-campus-blue text-white py-2 rounded-md disabled:bg-gray-300">Next</button>

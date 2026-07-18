@@ -137,3 +137,50 @@ def get_my_orders(
     current_student: models.Student = Depends(deps.get_current_student)
 ):
     return db.query(models.Order).filter(models.Order.student_id == current_student.id).order_by(models.Order.created_at.desc()).all()
+
+@router.put("/{order_id}/cancel", response_model=schemas.OrderResponse)
+def cancel_order(
+    order_id: int,
+    db: Session = Depends(database.get_db),
+    current_student: models.Student = Depends(deps.get_current_student)
+):
+    order = db.query(models.Order).filter(models.Order.id == order_id, models.Order.student_id == current_student.id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    if order.status not in ["PENDING_PAYMENT", "PAYMENT_VERIFICATION"]:
+        raise HTTPException(status_code=400, detail="Order cannot be cancelled at this stage")
+        
+    order.status = "CANCELLED"
+    db.commit()
+    db.refresh(order)
+    
+    # Audit Log
+    db.add(models.AuditLog(
+        user_type="student",
+        user_identifier=current_student.mobile_number,
+        action="CANCEL_ORDER",
+        details=f"Order {order.order_number} cancelled"
+    ))
+    db.commit()
+    return order
+
+@router.post("/{order_id}/feedback", response_model=schemas.OrderResponse)
+def submit_feedback(
+    order_id: int,
+    feedback: schemas.OrderFeedback,
+    db: Session = Depends(database.get_db),
+    current_student: models.Student = Depends(deps.get_current_student)
+):
+    order = db.query(models.Order).filter(models.Order.id == order_id, models.Order.student_id == current_student.id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    if order.status != "COMPLETED":
+        raise HTTPException(status_code=400, detail="Feedback can only be submitted for completed orders")
+        
+    order.feedback_rating = feedback.rating
+    order.feedback_text = feedback.text
+    db.commit()
+    db.refresh(order)
+    return order

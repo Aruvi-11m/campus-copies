@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from . import models
+from sqlalchemy.orm import Session
+from . import models, schemas, database
 from .database import engine
 from .routers import auth_router, orders_router, admin_router, agent_router
 import os
@@ -30,3 +31,13 @@ app.include_router(agent_router.router)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Campus Copies API"}
+
+@app.get("/public/settings", response_model=schemas.PricingSettingsResponse)
+def get_public_settings(db: Session = Depends(database.get_db)):
+    settings = db.query(models.PricingSettings).first()
+    if not settings:
+        settings = models.PricingSettings()
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    return settings

@@ -26,6 +26,26 @@ export default function OrderManagement() {
     }
   };
 
+  const cancelOrder = async (orderId) => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      await api.put(`/admin/orders/${orderId}/cancel`);
+      fetchOrders();
+    } catch (err) {
+      alert("Failed to cancel order");
+    }
+  };
+
+  const deleteOrder = async (orderId) => {
+    if (!confirm('Are you sure you want to permanently delete this fake order?')) return;
+    try {
+      await api.delete(`/admin/orders/${orderId}`);
+      fetchOrders();
+    } catch (err) {
+      alert("Failed to delete order");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
@@ -46,6 +66,8 @@ export default function OrderManagement() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {order.order_number}<br/>
                   <span className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</span>
+                  <div className="mt-1 text-xs font-semibold text-blue-700">{order.student_name}</div>
+                  <div className="text-xs text-gray-500">{order.student_department}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {order.print_type} | {order.color} | {order.binding} | {order.copies}x
@@ -87,6 +109,10 @@ export default function OrderManagement() {
                   {order.status === 'READY_FOR_PICKUP' && (
                     <button onClick={() => updateStatus(order.id, 'COMPLETED')} className="text-indigo-600 hover:text-indigo-900">Mark Picked Up</button>
                   )}
+                  {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && (
+                     <button onClick={() => cancelOrder(order.id)} className="block mt-2 text-orange-600 hover:text-orange-900">Cancel</button>
+                  )}
+                  <button onClick={() => deleteOrder(order.id)} className="block mt-2 text-red-600 hover:text-red-900 text-xs">Delete (Spam)</button>
                 </td>
               </tr>
             ))}

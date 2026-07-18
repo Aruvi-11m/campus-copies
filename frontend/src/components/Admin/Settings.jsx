@@ -80,6 +80,10 @@ export default function Settings() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h2 className="text-lg font-bold mb-4">Pricing Settings (Student Facing)</h2>
           <form onSubmit={savePricing} className="space-y-4">
+            <div className="flex items-center space-x-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <input type="checkbox" id="service_active" name="service_active" checked={pricing.service_active ?? true} onChange={(e) => setPricing({...pricing, service_active: e.target.checked})} className="h-5 w-5 text-blue-600 rounded" />
+              <label htmlFor="service_active" className="font-semibold text-blue-900">Service Active (Accepting New Orders)</label>
+            </div>
             <div><label className="block text-sm font-medium">Single Side Price</label><input type="number" step="0.01" name="single_side_price" value={pricing.single_side_price} onChange={handlePricingChange} className="mt-1 block w-full rounded border p-2"/></div>
             <div><label className="block text-sm font-medium">Double Side Price</label><input type="number" step="0.01" name="double_side_price" value={pricing.double_side_price} onChange={handlePricingChange} className="mt-1 block w-full rounded border p-2"/></div>
             <div><label className="block text-sm font-medium">Multi Page Price</label><input type="number" step="0.01" name="multi_page_price" value={pricing.multi_page_price} onChange={handlePricingChange} className="mt-1 block w-full rounded border p-2"/></div>

@@ -41,6 +41,7 @@ class PricingSettings(Base):
     gst_percent = Column(Float, default=18.0)
     upi_id = Column(String, nullable=True)
     qr_code_path = Column(String, nullable=True)
+    service_active = Column(Boolean, default=True)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 class CostSettings(Base):
@@ -87,11 +88,22 @@ class Order(Base):
     printed_at = Column(DateTime(timezone=True), nullable=True)
     ready_at = Column(DateTime(timezone=True), nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
+    
+    feedback_rating = Column(Integer, nullable=True)
+    feedback_text = Column(String, nullable=True)
 
     student = relationship("Student", back_populates="orders")
     sales_logs = relationship("SalesLog", back_populates="order")
     profit_logs = relationship("ProfitLog", back_populates="order")
     print_logs = relationship("PrintLog", back_populates="order")
+
+    @property
+    def student_name(self):
+        return self.student.name if self.student else None
+
+    @property
+    def student_department(self):
+        return self.student.department if self.student else None
 
 class Inventory(Base):
     __tablename__ = "inventory"
