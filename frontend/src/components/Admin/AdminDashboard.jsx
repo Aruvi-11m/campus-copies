@@ -1,11 +1,34 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     fetchData();
+    fetchChartData();
   }, []);
 
   const fetchData = async () => {
@@ -17,9 +40,61 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchChartData = async () => {
+    try {
+      const res = await api.get('/admin/analytics/control-chart');
+      setChartData(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const downloadCSV = () => {
+    const headers = ['Date', 'Material Cost', 'Cost of Pages', 'Order Amount'];
+    const rows = chartData.map(d => [
+      d.date,
+      d.material_cost,
+      d.cost_of_pages,
+      d.order_amount
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(','), ...rows.map(e => e.join(','))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "control_chart_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const completed = orders.filter(o => o.status === 'COMPLETED');
   const revenue = completed.reduce((sum, o) => sum + o.grand_total, 0);
   const pending = orders.filter(o => o.status !== 'COMPLETED');
+
+  const chartJsData = {
+    labels: chartData.map(d => d.date),
+    datasets: [
+      {
+        label: 'Material Cost',
+        data: chartData.map(d => d.material_cost),
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      },
+      {
+        label: 'Cost of Pages (Expenses)',
+        data: chartData.map(d => d.cost_of_pages),
+        borderColor: 'rgb(53, 162, 235)',
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      },
+      {
+        label: 'Order Amount (Revenue)',
+        data: chartData.map(d => d.order_amount),
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+      }
+    ],
+  };
 
   return (
     <div className="space-y-6">
@@ -41,6 +116,22 @@ export default function AdminDashboard() {
           <div className="text-gray-500 text-sm">Total Revenue</div>
           <div className="text-3xl font-bold text-blue-600">₹{revenue.toFixed(2)}</div>
         </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Control Chart (Revenue vs Expenses)</h2>
+          <button onClick={downloadCSV} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Download CSV
+          </button>
+        </div>
+        {chartData.length > 0 ? (
+          <div className="h-96">
+            <Line data={chartJsData} options={{ responsive: true, maintainAspectRatio: false }} />
+          </div>
+        ) : (
+          <p className="text-gray-500">No data available for chart.</p>
+        )}
       </div>
 
       <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">Recent Feedback</h2>

@@ -18,8 +18,8 @@ export default function AdminLayout() {
         <nav className="flex-1 px-4 py-4 space-y-2">
           <Link to="/admin/dashboard" className="block px-4 py-2 rounded text-gray-300 hover:bg-gray-800 hover:text-white">Dashboard</Link>
           <Link to="/admin/orders" className="block px-4 py-2 rounded text-gray-300 hover:bg-gray-800 hover:text-white">Orders</Link>
+          <Link to="/admin/materials" className="block px-4 py-2 rounded text-gray-300 hover:bg-gray-800 hover:text-white">Material Logs</Link>
           <Link to="/admin/settings" className="block px-4 py-2 rounded text-gray-300 hover:bg-gray-800 hover:text-white">Settings & Pricing</Link>
-          {/* Missing links for Inventory, Sales, Customers, Profit Calculator, etc. - adding a placeholder for brevity */}
         </nav>
         <div className="p-4 border-t border-gray-800">
           <button onClick={handleLogout} className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">Logout</button>

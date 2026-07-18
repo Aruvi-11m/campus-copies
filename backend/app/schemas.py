@@ -189,3 +189,17 @@ class AnalyticsCacheResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# Material Purchase Log
+class MaterialPurchaseCreate(BaseModel):
+    category: str
+    variant: Optional[str] = None
+    quantity: int
+    total_cost: float
+
+class MaterialPurchaseResponse(MaterialPurchaseCreate):
+    id: int
+    purchased_at: datetime
+
+    class Config:
+        from_attributes = True

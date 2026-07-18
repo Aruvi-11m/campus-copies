@@ -263,3 +263,65 @@ def delete_order_admin(
 
     db.commit()
     return {"detail": "Order deleted successfully"}
+
+# Material Logs
+@router.post("/materials", response_model=schemas.MaterialPurchaseResponse)
+def create_material_purchase(
+    purchase: schemas.MaterialPurchaseCreate,
+    db: Session = Depends(database.get_db),
+    admin: models.Admin = Depends(deps.get_current_admin)
+):
+    db_purchase = models.MaterialPurchaseLog(**purchase.model_dump())
+    db.add(db_purchase)
+    db.commit()
+    db.refresh(db_purchase)
+    return db_purchase
+
+@router.get("/materials", response_model=list[schemas.MaterialPurchaseResponse])
+def get_material_purchases(
+    db: Session = Depends(database.get_db),
+    admin: models.Admin = Depends(deps.get_current_admin)
+):
+    return db.query(models.MaterialPurchaseLog).order_by(models.MaterialPurchaseLog.purchased_at.desc()).all()
+
+# Analytics Control Chart
+@router.get("/analytics/control-chart")
+def get_control_chart_data(
+    db: Session = Depends(database.get_db),
+    admin: models.Admin = Depends(deps.get_current_admin)
+):
+    from sqlalchemy import func
+    from collections import defaultdict
+    
+    # We will group by day (YYYY-MM-DD)
+    # 1. Material Buying Logs Cost
+    material_logs = db.query(
+        func.date(models.MaterialPurchaseLog.purchased_at).label("date"),
+        func.sum(models.MaterialPurchaseLog.total_cost).label("cost")
+    ).group_by(func.date(models.MaterialPurchaseLog.purchased_at)).all()
+    
+    # 2. Revenue and Cost of Pages from ProfitLog
+    # ProfitLog tracks expense and revenue
+    profit_logs = db.query(
+        func.date(models.ProfitLog.created_at).label("date"),
+        func.sum(models.ProfitLog.revenue).label("revenue"),
+        func.sum(models.ProfitLog.expense).label("expense")
+    ).group_by(func.date(models.ProfitLog.created_at)).all()
+    
+    data_by_date = defaultdict(lambda: {"date": "", "material_cost": 0.0, "order_amount": 0.0, "cost_of_pages": 0.0})
+    
+    for log in material_logs:
+        date_str = str(log.date)
+        data_by_date[date_str]["date"] = date_str
+        data_by_date[date_str]["material_cost"] += float(log.cost or 0)
+        
+    for log in profit_logs:
+        date_str = str(log.date)
+        data_by_date[date_str]["date"] = date_str
+        data_by_date[date_str]["order_amount"] += float(log.revenue or 0)
+        data_by_date[date_str]["cost_of_pages"] += float(log.expense or 0)
+        
+    # Sort by date
+    sorted_data = sorted(data_by_date.values(), key=lambda x: x["date"])
+    
+    return sorted_data

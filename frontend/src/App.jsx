@@ -8,6 +8,7 @@ import NewOrderWizard from './components/Student/NewOrderWizard';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import OrderManagement from './components/Admin/OrderManagement';
 import Settings from './components/Admin/Settings';
+import MaterialLogs from './components/Admin/MaterialLogs';
 
 function PrivateRoute({ children, role }) {
   const token = localStorage.getItem('token');
@@ -42,6 +43,7 @@ function App() {
         }>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="orders" element={<OrderManagement />} />
+          <Route path="materials" element={<MaterialLogs />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

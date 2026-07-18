@@ -193,3 +193,14 @@ class AnalyticsCache(Base):
     period_key = Column(String, index=True, nullable=False) # e.g. 2026-07-17
     value = Column(Float, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+class MaterialPurchaseLog(Base):
+    __tablename__ = "material_purchase_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String, nullable=False)
+    variant = Column(String, nullable=True)
+    quantity = Column(Integer, nullable=False)
+    total_cost = Column(Float, default=0.0)
+    purchased_at = Column(DateTime(timezone=True), default=utcnow)
+
