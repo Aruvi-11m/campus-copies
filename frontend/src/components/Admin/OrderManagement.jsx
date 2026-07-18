@@ -65,7 +65,7 @@ export default function OrderManagement() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {orders.map(order => (
+            {orders.filter(o => o.status !== 'CANCELLED').map(order => (
               <tr key={order.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {order.order_number}<br/>

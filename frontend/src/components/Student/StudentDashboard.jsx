@@ -62,8 +62,9 @@ export default function StudentDashboard() {
     }
   };
 
-  const completedOrders = orders.filter(o => o.status === 'COMPLETED');
-  const pendingOrders = orders.filter(o => o.status !== 'COMPLETED');
+  const visibleOrders = orders.filter(o => o.status !== 'CANCELLED');
+  const completedOrders = visibleOrders.filter(o => o.status === 'COMPLETED');
+  const pendingOrders = visibleOrders.filter(o => o.status !== 'COMPLETED');
   const totalSpent = completedOrders.reduce((sum, o) => sum + o.grand_total, 0);
 
   return (
@@ -81,7 +82,7 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="text-gray-500 text-sm">Total Orders</div>
-          <div className="text-3xl font-bold text-campus-blue">{orders.length}</div>
+          <div className="text-3xl font-bold text-campus-blue">{visibleOrders.length}</div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="text-gray-500 text-sm">Amount Spent</div>
@@ -114,7 +115,7 @@ export default function StudentDashboard() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {orders.map(order => (
+            {visibleOrders.map(order => (
               <tr key={order.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.order_number}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>

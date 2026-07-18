@@ -73,9 +73,10 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
 
-  const completed = orders.filter(o => o.status === 'COMPLETED');
+  const visibleOrders = orders.filter(o => o.status !== 'CANCELLED');
+  const completed = visibleOrders.filter(o => o.status === 'COMPLETED');
   const revenue = completed.reduce((sum, o) => sum + o.grand_total, 0);
-  const pending = orders.filter(o => o.status !== 'COMPLETED');
+  const pending = visibleOrders.filter(o => o.status !== 'COMPLETED');
 
   const chartJsData = {
     labels: chartData.map(d => d.date),
@@ -108,7 +109,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="text-gray-500 text-sm">Total Orders</div>
-          <div className="text-3xl font-bold text-gray-900">{orders.length}</div>
+          <div className="text-3xl font-bold text-gray-900">{visibleOrders.length}</div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="text-gray-500 text-sm">Pending Orders</div>
