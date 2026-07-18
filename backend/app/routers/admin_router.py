@@ -169,10 +169,16 @@ def log_sales_and_profit(db: Session, order: models.Order):
     cost_settings = db.query(models.CostSettings).first()
     student = order.student
     
+    import math
+    if order.print_type == "multi_page":
+        billable_pages = math.ceil(order.pages / 4.0)
+    else:
+        billable_pages = order.pages
+        
     # Calculate costs
-    paper_cost = cost_settings.paper_cost_per_sheet * (order.pages * order.copies)
-    printing_expense = cost_settings.printing_cost_per_page * (order.pages * order.copies)
-    ink_expense = cost_settings.ink_cost_per_page * (order.pages * order.copies) if order.color == "color" else 0
+    paper_cost = cost_settings.paper_cost_per_sheet * (billable_pages * order.copies)
+    printing_expense = cost_settings.printing_cost_per_page * (billable_pages * order.copies)
+    ink_expense = cost_settings.ink_cost_per_page * (billable_pages * order.copies) if order.color == "color" else 0
     binding_expense = (cost_settings.spiral_binding_cost if order.binding == "spiral" else cost_settings.soft_binding_cost if order.binding == "soft" else 0) * order.copies
     
     total_expense = paper_cost + printing_expense + ink_expense + binding_expense
@@ -206,6 +212,6 @@ def log_sales_and_profit(db: Session, order: models.Order):
     # Update inventory
     inventory_item = db.query(models.Inventory).first() # Assuming single paper type for now
     if inventory_item:
-        inventory_item.current_stock -= (order.pages * order.copies)
+        inventory_item.current_stock -= (billable_pages * order.copies)
         
     db.commit()
