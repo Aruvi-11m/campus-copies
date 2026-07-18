@@ -80,30 +80,3 @@ def get_public_settings(db: Session = Depends(database.get_db)):
         db.commit()
         db.refresh(settings)
     return settings
-
-@app.get("/public/debug-db")
-def debug_db(db: Session = Depends(database.get_db)):
-    import traceback
-    result = {}
-    try:
-        from sqlalchemy import inspect
-        inspector = inspect(engine)
-        result["database_url"] = str(engine.url).split("@")[-1] if "@" in str(engine.url) else str(engine.url)
-        result["tables"] = inspector.get_table_names()
-        if "orders" in result["tables"]:
-            result["orders_columns"] = [col['name'] for col in inspector.get_columns("orders")]
-        
-        # Test query
-        try:
-            orders = db.query(models.Order).limit(1).all()
-            result["query_orders_success"] = True
-            result["orders_count"] = len(orders)
-        except Exception as query_err:
-            result["query_orders_success"] = False
-            result["query_orders_error"] = str(query_err)
-            result["query_orders_traceback"] = traceback.format_exc()
-            
-    except Exception as e:
-        result["error"] = str(e)
-        result["traceback"] = traceback.format_exc()
-    return result
