@@ -23,6 +23,7 @@ export default function NewOrderWizard() {
   const [screenshotUrl, setScreenshotUrl] = useState(null);
   
   const [serviceActive, setServiceActive] = useState(true);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
 
@@ -40,8 +41,10 @@ export default function NewOrderWizard() {
     try {
       const res = await api.get('/public/settings');
       setServiceActive(res.data.service_active ?? true);
+      setError(null);
     } catch (err) {
       console.error('Failed to fetch settings', err);
+      setError('Cannot connect to the backend server. Please make sure the API is running and VITE_API_URL is configured correctly.');
     }
   };
 
@@ -113,6 +116,8 @@ export default function NewOrderWizard() {
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8 border border-gray-200">
       <h1 className="text-2xl font-bold mb-6 text-gray-900">New Print Order</h1>
       
+      {error && <div className="p-4 bg-red-100 text-red-700 rounded-md border border-red-300 font-medium mb-6">{error}</div>}
+
       {!serviceActive && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
           <p className="text-red-700 font-bold">Service is not available at the moment.</p>

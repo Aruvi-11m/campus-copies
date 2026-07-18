@@ -4,6 +4,8 @@ import api from '../../api';
 export default function Settings() {
   const [pricing, setPricing] = useState(null);
   const [costs, setCosts] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchSettings();
@@ -17,8 +19,12 @@ export default function Settings() {
       ]);
       setPricing(resPricing.data);
       setCosts(resCosts.data);
+      setError(null);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch admin settings:', err);
+      setError('Cannot connect to the backend server. Please make sure the API is running and VITE_API_URL is configured correctly.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,7 +75,9 @@ export default function Settings() {
     }
   };
 
-  if (!pricing || !costs) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="p-4 bg-red-100 text-red-700 rounded-md border border-red-300 font-medium">{error}</div>;
+  if (!pricing || !costs) return <div>Data failed to load.</div>;
 
   return (
     <div className="space-y-8">

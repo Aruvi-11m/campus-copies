@@ -26,9 +26,12 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [chartData, setChartData] = useState([]);
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    fetchData();
-    fetchChartData();
+    Promise.all([fetchData(), fetchChartData()]).catch(() => {
+      setError('Cannot connect to the backend server.');
+    });
   }, []);
 
   const fetchData = async () => {
@@ -37,6 +40,7 @@ export default function AdminDashboard() {
       setOrders(res.data);
     } catch (err) {
       console.error(err);
+      throw err;
     }
   };
 
@@ -46,6 +50,7 @@ export default function AdminDashboard() {
       setChartData(res.data);
     } catch (err) {
       console.error(err);
+      throw err;
     }
   };
 
@@ -99,6 +104,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+      {error && <div className="p-4 bg-red-100 text-red-700 rounded-md border border-red-300 font-medium">{error}</div>}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="text-gray-500 text-sm">Total Orders</div>

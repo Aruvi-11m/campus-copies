@@ -3,6 +3,7 @@ import api from '../../api';
 
 export default function OrderManagement() {
   const [orders, setOrders] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -12,8 +13,10 @@ export default function OrderManagement() {
     try {
       const res = await api.get('/admin/orders');
       setOrders(res.data);
+      setError(null);
     } catch (err) {
       console.error(err);
+      setError('Cannot connect to backend server to fetch orders.');
     }
   };
 
@@ -49,6 +52,7 @@ export default function OrderManagement() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
+      {error && <div className="p-4 bg-red-100 text-red-700 rounded-md border border-red-300 font-medium">{error}</div>}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">

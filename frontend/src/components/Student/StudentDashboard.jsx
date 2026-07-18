@@ -5,9 +5,12 @@ export default function StudentDashboard() {
   const [orders, setOrders] = useState([]);
   const [serviceActive, setServiceActive] = useState(true);
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    fetchOrders();
-    fetchSettings();
+    Promise.all([fetchOrders(), fetchSettings()]).catch(() => {
+      setError('Cannot connect to backend server.');
+    });
   }, []);
 
   const fetchSettings = async () => {
@@ -16,6 +19,7 @@ export default function StudentDashboard() {
       setServiceActive(res.data.service_active ?? true);
     } catch (err) {
       console.error('Failed to fetch settings', err);
+      throw err;
     }
   };
 
@@ -25,6 +29,7 @@ export default function StudentDashboard() {
       setOrders(res.data);
     } catch (error) {
       console.error('Failed to fetch orders', error);
+      throw error;
     }
   };
 
@@ -64,6 +69,7 @@ export default function StudentDashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+      {error && <div className="p-4 bg-red-100 text-red-700 rounded-md border border-red-300 font-medium">{error}</div>}
       
       {!serviceActive && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">

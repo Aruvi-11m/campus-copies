@@ -20,6 +20,7 @@ export default function MaterialLogs() {
   const [variant, setVariant] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [totalCost, setTotalCost] = useState(0);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchLogs();
@@ -29,8 +30,10 @@ export default function MaterialLogs() {
     try {
       const res = await api.get('/admin/materials');
       setLogs(res.data);
+      setError(null);
     } catch (err) {
       console.error(err);
+      setError('Cannot connect to backend server to fetch logs.');
     }
   };
 
@@ -62,6 +65,7 @@ export default function MaterialLogs() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Material Purchase Logs</h1>
+      {error && <div className="p-4 bg-red-100 text-red-700 rounded-md border border-red-300 font-medium">{error}</div>}
       
       <div className="bg-white p-6 rounded shadow-sm border border-gray-200">
         <h2 className="text-lg font-semibold mb-4">Add New Purchase</h2>
