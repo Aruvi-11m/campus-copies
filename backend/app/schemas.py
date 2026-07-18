@@ -100,6 +100,9 @@ class OrderResponse(BaseModel):
     status: str
     pickup_code: Optional[str] = None
     printer_used: Optional[str] = None
+    file_path: str
+    payment_screenshot_path: Optional[str] = None
+    payment_transaction_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

@@ -59,11 +59,28 @@ export default function OrderManagement() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                   {order.status === 'PAYMENT_VERIFICATION' && (
-                    <>
-                      <button onClick={() => updateStatus(order.id, 'PAYMENT_RECEIVED')} className="text-green-600 hover:text-green-900">Approve</button>
-                      <button onClick={() => updateStatus(order.id, 'PENDING_PAYMENT')} className="text-red-600 hover:text-red-900">Reject</button>
-                    </>
+                    <div className="flex flex-col space-y-2">
+                      <div className="text-xs text-gray-500">
+                        Txn ID: {order.payment_transaction_id}
+                        <br/>
+                        <a href={`${api.defaults.baseURL}/${order.payment_screenshot_path}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">View Screenshot</a>
+                      </div>
+                      <div className="space-x-2">
+                        <button onClick={() => updateStatus(order.id, 'PAYMENT_RECEIVED')} className="text-green-600 hover:text-green-900">Approve</button>
+                        <button onClick={() => updateStatus(order.id, 'PENDING_PAYMENT')} className="text-red-600 hover:text-red-900">Reject</button>
+                      </div>
+                    </div>
                   )}
+                  {order.status !== 'PAYMENT_VERIFICATION' && order.payment_transaction_id && (
+                    <div className="text-xs text-gray-500 mb-2">
+                      Txn: {order.payment_transaction_id}
+                      <br/>
+                      <a href={`${api.defaults.baseURL}/${order.payment_screenshot_path}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">Proof</a>
+                    </div>
+                  )}
+                  <div className="text-xs mt-1 mb-2">
+                      <a href={`${api.defaults.baseURL}/${order.file_path}`} target="_blank" rel="noreferrer" className="text-blue-600 underline font-semibold">View PDF</a>
+                  </div>
                   {order.status === 'PRINTING' && order.color === 'color' && (
                     <button onClick={() => updateStatus(order.id, 'READY_FOR_PICKUP')} className="text-blue-600 hover:text-blue-900">Mark Printed</button>
                   )}
