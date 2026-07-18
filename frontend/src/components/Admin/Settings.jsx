@@ -23,13 +23,13 @@ export default function Settings() {
   };
 
   const handlePricingChange = (e) => {
-    const { name, value } = e.target;
-    setPricing({ ...pricing, [name]: parseFloat(value) || value });
+    const { name, value, type } = e.target;
+    setPricing({ ...pricing, [name]: type === 'number' ? (parseFloat(value) || 0) : value });
   };
 
   const handleCostsChange = (e) => {
-    const { name, value } = e.target;
-    setCosts({ ...costs, [name]: parseFloat(value) || value });
+    const { name, value, type } = e.target;
+    setCosts({ ...costs, [name]: type === 'number' ? (parseFloat(value) || 0) : value });
   };
 
   const savePricing = async (e) => {
