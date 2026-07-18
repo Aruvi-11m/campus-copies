@@ -7,8 +7,20 @@ from .database import engine
 from .routers import auth_router, orders_router, admin_router, agent_router
 import os
 
+from sqlalchemy import text
+from sqlalchemy.engine.reflection import Inspector
+
 models.Base.metadata.create_all(bind=engine)
 
+try:
+    inspector = Inspector.from_engine(engine)
+    if "pricing_settings" in inspector.get_table_names():
+        columns = [col['name'] for col in inspector.get_columns("pricing_settings")]
+        if "service_active" not in columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE pricing_settings ADD COLUMN service_active BOOLEAN DEFAULT true"))
+except Exception as e:
+    print("Auto-migration failed:", e)
 app = FastAPI(title="Campus Copies API")
 
 # Allow all origins for dev
