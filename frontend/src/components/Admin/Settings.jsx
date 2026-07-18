@@ -40,9 +40,7 @@ export default function Settings() {
     formData.append('file', file);
     
     try {
-      const res = await api.post('/admin/pricing/qr-code', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post('/admin/pricing/qr-code', formData);
       setPricing(res.data);
       alert('QR Code uploaded successfully!');
     } catch (err) {

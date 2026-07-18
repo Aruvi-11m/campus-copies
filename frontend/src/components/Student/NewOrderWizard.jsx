@@ -72,9 +72,7 @@ export default function NewOrderWizard() {
     formData.append('notes', notes);
 
     try {
-      const res = await api.post('/orders', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post('/orders', formData);
       setCreatedOrder(res.data);
       setStep(4);
     } catch (err) {
@@ -88,9 +86,7 @@ export default function NewOrderWizard() {
     formData.append('screenshot', screenshot);
 
     try {
-      await api.post(`/orders/${createdOrder.id}/payment`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post(`/orders/${createdOrder.id}/payment`, formData);
       alert("Payment submitted successfully!");
       navigate('/student/dashboard');
     } catch (err) {
