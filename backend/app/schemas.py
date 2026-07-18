@@ -122,6 +122,8 @@ class CostPreview(BaseModel):
     binding_cost: float
     gst_amount: float
     grand_total: float
+    upi_id: Optional[str] = None
+    qr_code_path: Optional[str] = None
 
 # Inventory
 class InventoryCreate(BaseModel):

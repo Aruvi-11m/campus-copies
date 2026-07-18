@@ -31,6 +31,29 @@ def update_pricing_settings(settings: schemas.PricingSettingsUpdate, db: Session
     db.refresh(db_settings)
     return db_settings
 
+from fastapi import UploadFile, File
+import uuid
+from . import storage
+
+@router.post("/pricing/qr-code", response_model=schemas.PricingSettingsResponse)
+def upload_qr_code(
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db),
+    current_admin: models.Admin = Depends(deps.get_current_admin)
+):
+    db_settings = db.query(models.PricingSettings).first()
+    if not db_settings:
+        db_settings = models.PricingSettings()
+        db.add(db_settings)
+        
+    unique_filename = f"qr_{uuid.uuid4()}_{file.filename}"
+    file_path = storage.save_file(file, unique_filename)
+    
+    db_settings.qr_code_path = file_path
+    db.commit()
+    db.refresh(db_settings)
+    return db_settings
+
 @router.get("/cost", response_model=schemas.CostSettingsResponse)
 def get_cost_settings(db: Session = Depends(database.get_db), current_admin: models.Admin = Depends(deps.get_current_admin)):
     settings = db.query(models.CostSettings).first()

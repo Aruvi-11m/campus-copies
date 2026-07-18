@@ -32,6 +32,25 @@ export default function Settings() {
     setCosts({ ...costs, [name]: type === 'number' ? (parseFloat(value) || 0) : value });
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await api.post('/admin/pricing/qr-code', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setPricing(res.data);
+      alert('QR Code uploaded successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload QR Code');
+    }
+  };
+
   const savePricing = async (e) => {
     e.preventDefault();
     try {
@@ -71,6 +90,13 @@ export default function Settings() {
             <div><label className="block text-sm font-medium">Soft Binding Price</label><input type="number" step="0.01" name="soft_binding_price" value={pricing.soft_binding_price} onChange={handlePricingChange} className="mt-1 block w-full rounded border p-2"/></div>
             <div><label className="block text-sm font-medium">GST %</label><input type="number" step="0.01" name="gst_percent" value={pricing.gst_percent} onChange={handlePricingChange} className="mt-1 block w-full rounded border p-2"/></div>
             <div><label className="block text-sm font-medium">UPI ID</label><input type="text" name="upi_id" value={pricing.upi_id || ''} onChange={handlePricingChange} className="mt-1 block w-full rounded border p-2"/></div>
+            <div>
+              <label className="block text-sm font-medium">QR Code</label>
+              {pricing.qr_code_path && (
+                <img src={`${api.defaults.baseURL}/${pricing.qr_code_path}`} alt="QR Code" className="w-32 h-32 mt-2 mb-2 object-contain border" />
+              )}
+              <input type="file" onChange={handleFileUpload} accept="image/*" className="mt-1 block w-full text-sm" />
+            </div>
             <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Pricing</button>
           </form>
         </div>

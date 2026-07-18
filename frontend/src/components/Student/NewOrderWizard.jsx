@@ -199,11 +199,18 @@ export default function NewOrderWizard() {
         <div className="space-y-6 text-center">
           <h2 className="text-xl font-bold">Make Payment</h2>
           <p className="text-gray-600 mb-4">Scan the QR code to pay ₹{createdOrder?.grand_total.toFixed(2)}</p>
-          <div className="w-48 h-48 mx-auto bg-gray-200 flex items-center justify-center rounded">
-             {/* In a real app, this would be an actual QR code image fetched from settings */}
-             <span className="text-gray-500">QR Code Placeholder</span>
+          <div className="mx-auto flex flex-col items-center justify-center rounded">
+            {costPreview?.qr_code_path ? (
+              <img src={`${api.defaults.baseURL}/${costPreview.qr_code_path}`} alt="QR Code" className="w-48 h-48 object-contain border" />
+            ) : (
+              <div className="w-48 h-48 bg-gray-200 flex items-center justify-center rounded">
+                <span className="text-gray-500">QR Code Placeholder</span>
+              </div>
+            )}
+            {costPreview?.upi_id && (
+              <p className="mt-2 font-medium text-gray-700">UPI ID: {costPreview.upi_id}</p>
+            )}
           </div>
-          
           <div className="max-w-md mx-auto space-y-4 text-left mt-6">
             <div>
               <label className="block text-sm font-medium">Transaction ID</label>

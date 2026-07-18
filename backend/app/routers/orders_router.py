@@ -28,6 +28,8 @@ def preview_cost(
         "print_type": print_type,
         "color": color,
         "binding": binding,
+        "upi_id": pricing_settings.upi_id,
+        "qr_code_path": pricing_settings.qr_code_path,
         **cost_data
     }
 
