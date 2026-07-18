@@ -33,7 +33,7 @@ def update_pricing_settings(settings: schemas.PricingSettingsUpdate, db: Session
 
 from fastapi import UploadFile, File
 import uuid
-from . import storage
+from .. import storage
 
 @router.post("/pricing/qr-code", response_model=schemas.PricingSettingsResponse)
 def upload_qr_code(
