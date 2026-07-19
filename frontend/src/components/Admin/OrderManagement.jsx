@@ -5,6 +5,14 @@ export default function OrderManagement() {
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState(null);
 
+  const getFileUrl = (path) => {
+    if (!path) return '#';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return `${api.defaults.baseURL}/${path}`;
+  };
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -89,7 +97,7 @@ export default function OrderManagement() {
                       <div className="text-xs text-gray-500">
                         Txn ID: {order.payment_transaction_id}
                         <br/>
-                        <a href={`${api.defaults.baseURL}/${order.payment_screenshot_path}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">View Screenshot</a>
+                        <a href={getFileUrl(order.payment_screenshot_path)} target="_blank" rel="noreferrer" className="text-blue-500 underline">View Screenshot</a>
                       </div>
                       <div className="space-x-2">
                         <button onClick={() => updateStatus(order.id, 'PAYMENT_RECEIVED')} className="text-green-600 hover:text-green-900">Approve</button>
@@ -101,11 +109,11 @@ export default function OrderManagement() {
                     <div className="text-xs text-gray-500 mb-2">
                       Txn: {order.payment_transaction_id}
                       <br/>
-                      <a href={`${api.defaults.baseURL}/${order.payment_screenshot_path}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">Proof</a>
+                      <a href={getFileUrl(order.payment_screenshot_path)} target="_blank" rel="noreferrer" className="text-blue-500 underline">Proof</a>
                     </div>
                   )}
                   <div className="text-xs mt-1 mb-2">
-                      <a href={`${api.defaults.baseURL}/${order.file_path}`} target="_blank" rel="noreferrer" className="text-blue-600 underline font-semibold">View PDF</a>
+                      <a href={getFileUrl(order.file_path)} target="_blank" rel="noreferrer" className="text-blue-600 underline font-semibold">View PDF</a>
                   </div>
                   {order.status === 'PRINTING' && order.color === 'color' && (
                     <button onClick={() => updateStatus(order.id, 'READY_FOR_PICKUP')} className="text-blue-600 hover:text-blue-900">Mark Printed</button>
