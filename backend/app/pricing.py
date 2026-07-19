@@ -11,6 +11,8 @@ def calculate_cost(pages, copies, print_type, color, binding, pricing):
     
     if print_type == "multi_page":
         billable_pages = math.ceil(pages / 4.0)
+    elif print_type == "double_side":
+        billable_pages = math.ceil(pages / 2.0)
     else:
         billable_pages = pages
         
