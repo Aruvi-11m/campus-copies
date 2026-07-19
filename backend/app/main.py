@@ -80,3 +80,12 @@ def get_public_settings(db: Session = Depends(database.get_db)):
         db.commit()
         db.refresh(settings)
     return settings
+
+from fastapi import HTTPException
+from fastapi.responses import RedirectResponse
+
+@app.get("/{url_path:path}")
+def redirect_malformed_url(url_path: str):
+    if url_path.startswith("http://") or url_path.startswith("https://"):
+        return RedirectResponse(url=url_path)
+    raise HTTPException(status_code=404, detail="Not Found")
