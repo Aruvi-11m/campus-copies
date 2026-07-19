@@ -80,3 +80,39 @@ def get_public_settings(db: Session = Depends(database.get_db)):
         db.commit()
         db.refresh(settings)
     return settings
+
+@app.get("/public/debug-storage")
+def debug_storage():
+    import json
+    from google.oauth2 import service_account
+    from googleapiclient.discovery import build
+    
+    sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
+    
+    result = {
+        "sa_json_present": sa_json is not None,
+        "sa_json_length": len(sa_json) if sa_json else 0,
+        "folder_id_present": folder_id is not None,
+        "folder_id": folder_id,
+        "drive_service_initialization": "Not tested"
+    }
+    
+    if sa_json:
+        try:
+            sa_info = json.loads(sa_json)
+            result["sa_client_email"] = sa_info.get("client_email")
+            
+            creds = service_account.Credentials.from_service_account_info(
+                sa_info, scopes=['https://www.googleapis.com/auth/drive']
+            )
+            service = build('drive', 'v3', credentials=creds)
+            # Try to fetch some files from drive to verify credentials
+            files_res = service.files().list(pageSize=1).execute()
+            result["drive_service_initialization"] = "Success"
+            result["can_list_files"] = True
+        except Exception as e:
+            result["drive_service_initialization"] = "Failed"
+            result["error"] = str(e)
+            
+    return result
