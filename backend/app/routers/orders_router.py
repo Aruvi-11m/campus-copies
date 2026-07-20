@@ -107,8 +107,9 @@ def create_order(
 @router.post("/{order_id}/payment", response_model=schemas.OrderResponse)
 def submit_payment(
     order_id: int,
-    payment_transaction_id: str = Form(...),
-    screenshot: UploadFile = File(...),
+    payment_method: str = Form("upi"),
+    payment_transaction_id: str = Form(None),
+    screenshot: UploadFile = File(None),
     db: Session = Depends(database.get_db),
     current_student: models.Student = Depends(deps.get_current_student)
 ):
@@ -119,13 +120,22 @@ def submit_payment(
     if order.status != "PENDING_PAYMENT":
         raise HTTPException(status_code=400, detail="Order is not pending payment")
 
-    unique_filename = f"payment_{uuid.uuid4()}_{screenshot.filename}"
-    file_path = storage.save_file(screenshot, unique_filename)
+    order.payment_method = payment_method
 
-    order.payment_transaction_id = payment_transaction_id
-    order.payment_screenshot_path = file_path
-    order.status = "PAYMENT_VERIFICATION"
-    order.payment_submitted_at = datetime.now(timezone.utc)
+    if payment_method == "cash":
+        order.status = "PENDING_CASH"
+        order.payment_submitted_at = datetime.now(timezone.utc)
+    else:
+        if not payment_transaction_id or not screenshot:
+            raise HTTPException(status_code=400, detail="Transaction ID and screenshot are required for UPI payments")
+        
+        unique_filename = f"payment_{uuid.uuid4()}_{screenshot.filename}"
+        file_path = storage.save_file(screenshot, unique_filename)
+
+        order.payment_transaction_id = payment_transaction_id
+        order.payment_screenshot_path = file_path
+        order.status = "PAYMENT_VERIFICATION"
+        order.payment_submitted_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(order)

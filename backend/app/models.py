@@ -76,6 +76,7 @@ class Order(Base):
     grand_total = Column(Float, default=0.0)
     
     status = Column(String, default="PENDING_PAYMENT") 
+    payment_method = Column(String, default="upi")
     payment_transaction_id = Column(String, nullable=True)
     payment_screenshot_path = Column(String, nullable=True)
     pickup_code = Column(String, unique=True, index=True, nullable=True)

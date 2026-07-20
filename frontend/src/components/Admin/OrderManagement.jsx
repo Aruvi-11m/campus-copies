@@ -76,7 +76,11 @@ export default function OrderManagement() {
             {orders.filter(o => o.status !== 'CANCELLED').map(order => (
               <tr key={order.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {order.order_number}<br/>
+                  {order.order_number}
+                  <span className={`ml-2 px-2 py-0.5 rounded text-xs font-bold ${order.payment_method === 'cash' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {order.payment_method === 'cash' ? 'CASH' : 'UPI'}
+                  </span>
+                  <br/>
                   <span className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</span>
                   <div className="mt-1 text-xs font-semibold text-blue-700">{order.student_name}</div>
                   <div className="text-xs text-gray-500">{order.student_department}</div>
@@ -100,9 +104,14 @@ export default function OrderManagement() {
                         <a href={getFileUrl(order.payment_screenshot_path)} target="_blank" rel="noreferrer" className="text-blue-500 underline">View Screenshot</a>
                       </div>
                       <div className="space-x-2">
-                        <button onClick={() => updateStatus(order.id, 'PAYMENT_RECEIVED')} className="text-green-600 hover:text-green-900">Approve</button>
+                        <button onClick={() => updateStatus(order.id, 'PAYMENT_RECEIVED')} className="text-green-600 hover:text-green-900">Approve UPI</button>
                         <button onClick={() => updateStatus(order.id, 'PENDING_PAYMENT')} className="text-red-600 hover:text-red-900">Reject</button>
                       </div>
+                    </div>
+                  )}
+                  {order.status === 'PENDING_CASH' && (
+                    <div className="flex flex-col space-y-2">
+                      <button onClick={() => updateStatus(order.id, 'PAYMENT_RECEIVED')} className="text-green-600 hover:text-green-900 font-bold bg-green-50 px-2 py-1 border border-green-200 rounded">Mark Cash Received</button>
                     </div>
                   )}
                   {order.status !== 'PAYMENT_VERIFICATION' && order.payment_transaction_id && (

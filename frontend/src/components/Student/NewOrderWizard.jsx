@@ -21,6 +21,7 @@ export default function NewOrderWizard() {
   const [transactionId, setTransactionId] = useState('');
   const [screenshot, setScreenshot] = useState(null);
   const [screenshotUrl, setScreenshotUrl] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('upi');
   
   const [serviceActive, setServiceActive] = useState(true);
   const [error, setError] = useState(null);
@@ -100,12 +101,16 @@ export default function NewOrderWizard() {
 
   const submitPayment = async () => {
     const formData = new FormData();
-    formData.append('payment_transaction_id', transactionId);
-    formData.append('screenshot', screenshot);
+    formData.append('payment_method', paymentMethod);
+    
+    if (paymentMethod === 'upi') {
+      formData.append('payment_transaction_id', transactionId);
+      formData.append('screenshot', screenshot);
+    }
 
     try {
       await api.post(`/orders/${createdOrder.id}/payment`, formData);
-      alert("Payment submitted successfully!");
+      alert(paymentMethod === 'cash' ? "Order placed successfully! Please pay cash at the counter." : "Payment submitted successfully!");
       navigate('/student/dashboard');
     } catch (err) {
       alert("Error submitting payment");
@@ -221,34 +226,61 @@ export default function NewOrderWizard() {
       {step === 4 && (
         <div className="space-y-6 text-center">
           <h2 className="text-xl font-bold">Make Payment</h2>
-          <p className="text-gray-600 mb-4">Scan the QR code to pay ₹{createdOrder?.grand_total.toFixed(2)}</p>
-          <div className="mx-auto flex flex-col items-center justify-center rounded">
-            {costPreview?.qr_code_path ? (
-              <img src={`${api.defaults.baseURL}/${costPreview.qr_code_path}`} alt="QR Code" className="w-48 h-48 object-contain border" />
-            ) : (
-              <div className="w-48 h-48 bg-gray-200 flex items-center justify-center rounded">
-                <span className="text-gray-500">QR Code Placeholder</span>
-              </div>
-            )}
-            {costPreview?.upi_id && (
-              <p className="mt-2 font-medium text-gray-700">UPI ID: {costPreview.upi_id}</p>
-            )}
-          </div>
-          <div className="max-w-md mx-auto space-y-4 text-left mt-6">
-            <div>
-              <label className="block text-sm font-medium">Transaction ID</label>
-              <input type="text" value={transactionId} onChange={e => setTransactionId(e.target.value)} className="w-full mt-1 border rounded p-2" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Upload Screenshot</label>
-              <input type="file" accept="image/*" onChange={handleScreenshotChange} className="w-full mt-1 border rounded p-2" required />
-            </div>
-            {screenshotUrl && <img src={screenshotUrl} alt="Preview" className="h-32 mx-auto object-cover border" />}
+          
+          <div className="flex justify-center space-x-4 mb-6">
+            <button 
+              onClick={() => setPaymentMethod('upi')} 
+              className={`px-4 py-2 rounded-md font-medium ${paymentMethod === 'upi' ? 'bg-campus-blue text-white' : 'bg-gray-200 text-gray-700'}`}
+            >
+              Pay via UPI
+            </button>
+            <button 
+              onClick={() => setPaymentMethod('cash')} 
+              className={`px-4 py-2 rounded-md font-medium ${paymentMethod === 'cash' ? 'bg-campus-blue text-white' : 'bg-gray-200 text-gray-700'}`}
+            >
+              Pay in Hand (Cash)
+            </button>
           </div>
 
-          <button disabled={!transactionId || !screenshot} onClick={submitPayment} className="w-full max-w-md bg-green-600 text-white py-2 rounded-md disabled:bg-gray-300 font-bold mt-4">
-            Submit Payment for Verification
-          </button>
+          {paymentMethod === 'upi' ? (
+            <>
+              <p className="text-gray-600 mb-4">Scan the QR code to pay ₹{createdOrder?.grand_total.toFixed(2)}</p>
+              <div className="mx-auto flex flex-col items-center justify-center rounded">
+                {costPreview?.qr_code_path ? (
+                  <img src={`${api.defaults.baseURL}/${costPreview.qr_code_path}`} alt="QR Code" className="w-48 h-48 object-contain border" />
+                ) : (
+                  <div className="w-48 h-48 bg-gray-200 flex items-center justify-center rounded">
+                    <span className="text-gray-500">QR Code Placeholder</span>
+                  </div>
+                )}
+                {costPreview?.upi_id && (
+                  <p className="mt-2 font-medium text-gray-700">UPI ID: {costPreview.upi_id}</p>
+                )}
+              </div>
+              <div className="max-w-md mx-auto space-y-4 text-left mt-6">
+                <div>
+                  <label className="block text-sm font-medium">Transaction ID</label>
+                  <input type="text" value={transactionId} onChange={e => setTransactionId(e.target.value)} className="w-full mt-1 border rounded p-2" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Upload Screenshot</label>
+                  <input type="file" accept="image/*" onChange={handleScreenshotChange} className="w-full mt-1 border rounded p-2" required />
+                </div>
+                {screenshotUrl && <img src={screenshotUrl} alt="Preview" className="h-32 mx-auto object-cover border" />}
+              </div>
+              <button disabled={!transactionId || !screenshot} onClick={submitPayment} className="w-full max-w-md bg-green-600 text-white py-2 rounded-md disabled:bg-gray-300 font-bold mt-4">
+                Submit Payment for Verification
+              </button>
+            </>
+          ) : (
+            <div className="max-w-md mx-auto bg-blue-50 border border-blue-200 p-6 rounded-lg text-left mt-6">
+              <h3 className="font-bold text-blue-800 mb-2">Cash Payment Instructions</h3>
+              <p className="text-blue-700 mb-4">You have chosen to pay in cash at the counter. Please bring exactly <strong>₹{createdOrder?.grand_total.toFixed(2)}</strong> when you come to pick up your order.</p>
+              <button onClick={submitPayment} className="w-full bg-green-600 text-white py-2 rounded-md font-bold mt-2">
+                Confirm Cash Order
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

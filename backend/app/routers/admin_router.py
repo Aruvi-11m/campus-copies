@@ -127,6 +127,18 @@ def update_order_status(order_id: int, status_update: schemas.OrderStatusUpdate,
         elif new_status != "PENDING_PAYMENT":
             raise HTTPException(status_code=400, detail="Invalid status transition from PAYMENT_VERIFICATION")
             
+    elif order.status == "PENDING_CASH":
+        if new_status == "PAYMENT_RECEIVED":
+            order.payment_verified_at = datetime.now(timezone.utc)
+        elif new_status != "PENDING_PAYMENT":
+            raise HTTPException(status_code=400, detail="Invalid status transition from PENDING_CASH")
+            
+    elif order.status == "PAYMENT_RECEIVED":
+        if new_status == "PRINTING":
+            pass # Just moving along the funnel
+        else:
+            raise HTTPException(status_code=400, detail="Invalid status transition from PAYMENT_RECEIVED")
+            
     elif order.status == "PRINTING":
         if new_status == "READY_FOR_PICKUP":
             if not order.pickup_code:
@@ -305,10 +317,11 @@ def get_control_chart_data(
     profit_logs = db.query(
         func.date(models.ProfitLog.created_at).label("date"),
         func.sum(models.ProfitLog.revenue).label("revenue"),
-        func.sum(models.ProfitLog.expense).label("expense")
-    ).group_by(func.date(models.ProfitLog.created_at)).all()
+        func.sum(models.ProfitLog.expense).label("expense"),
+        models.Order.payment_method
+    ).join(models.Order).group_by(func.date(models.ProfitLog.created_at), models.Order.payment_method).all()
     
-    data_by_date = defaultdict(lambda: {"date": "", "material_cost": 0.0, "order_amount": 0.0, "cost_of_pages": 0.0})
+    data_by_date = defaultdict(lambda: {"date": "", "material_cost": 0.0, "order_amount": 0.0, "cost_of_pages": 0.0, "cash_revenue": 0.0, "upi_revenue": 0.0})
     
     for log in material_logs:
         date_str = str(log.date)
@@ -321,7 +334,58 @@ def get_control_chart_data(
         data_by_date[date_str]["order_amount"] += float(log.revenue or 0)
         data_by_date[date_str]["cost_of_pages"] += float(log.expense or 0)
         
+        if getattr(log, "payment_method", "upi") == "cash":
+            data_by_date[date_str]["cash_revenue"] += float(log.revenue or 0)
+        else:
+            data_by_date[date_str]["upi_revenue"] += float(log.revenue or 0)
+        
     # Sort by date
     sorted_data = sorted(data_by_date.values(), key=lambda x: x["date"])
     
     return sorted_data
+
+
+import csv
+import io
+from ..storage import _upload_to_drive
+import os
+
+@router.post("/export-to-drive")
+def export_data_to_drive(db: Session = Depends(database.get_db), admin: models.Admin = Depends(deps.get_current_admin)):
+    folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
+    if not folder_id:
+        raise HTTPException(status_code=500, detail="Google Drive Folder ID not configured")
+        
+    # Generate CSV of Orders
+    orders = db.query(models.Order).order_by(models.Order.created_at.desc()).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Order ID", "Date", "Student", "Mobile", "Pages", "Copies", "Print Type", "Color", "Payment Method", "Revenue", "Status"])
+    
+    for o in orders:
+        writer.writerow([
+            o.order_number, 
+            o.created_at.strftime("%Y-%m-%d %H:%M:%S") if o.created_at else "", 
+            o.student_name, 
+            o.student.mobile_number if o.student else "", 
+            o.pages, 
+            o.copies, 
+            o.print_type, 
+            o.color, 
+            o.payment_method, 
+            o.grand_total, 
+            o.status
+        ])
+    
+    csv_content = output.getvalue()
+    
+    try:
+        from googleapiclient.http import MediaIoBaseUpload
+        media = MediaIoBaseUpload(io.BytesIO(csv_content.encode('utf-8')), mimetype='text/csv', resumable=True)
+        drive_file = _upload_to_drive(media, f"campus_copies_export_{datetime.now().strftime('%Y%m%d%H%M')}.csv", folder_id)
+        
+        return {"detail": "Export successful", "drive_link": drive_file.get("webViewLink")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

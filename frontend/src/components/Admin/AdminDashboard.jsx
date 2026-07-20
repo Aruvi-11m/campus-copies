@@ -25,6 +25,7 @@ ChartJS.register(
 export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [exporting, setExporting] = useState(false);
 
   const [error, setError] = useState(null);
 
@@ -55,11 +56,13 @@ export default function AdminDashboard() {
   };
 
   const downloadCSV = () => {
-    const headers = ['Date', 'Material Cost', 'Cost of Pages', 'Order Amount'];
+    const headers = ['Date', 'Material Cost', 'Cost of Pages', 'UPI Revenue', 'Cash Revenue', 'Total Order Amount'];
     const rows = chartData.map(d => [
       d.date,
       d.material_cost,
       d.cost_of_pages,
+      d.upi_revenue || 0,
+      d.cash_revenue || 0,
       d.order_amount
     ]);
     const csvContent = "data:text/csv;charset=utf-8," 
@@ -71,6 +74,19 @@ export default function AdminDashboard() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const exportToDrive = async () => {
+    setExporting(true);
+    try {
+      const res = await api.post('/admin/export-to-drive');
+      alert(`Export successful! File available at:\n${res.data.drive_link}`);
+    } catch (err) {
+      console.error(err);
+      alert('Export to Drive failed. Ensure your Service Account and Folder ID are configured.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const visibleOrders = orders.filter(o => o.status !== 'CANCELLED');
@@ -94,10 +110,16 @@ export default function AdminDashboard() {
         backgroundColor: 'rgba(53, 162, 235, 0.5)',
       },
       {
-        label: 'Order Amount (Revenue)',
-        data: chartData.map(d => d.order_amount),
+        label: 'UPI Revenue',
+        data: chartData.map(d => d.upi_revenue || 0),
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.5)',
+      },
+      {
+        label: 'Cash Revenue',
+        data: chartData.map(d => d.cash_revenue || 0),
+        borderColor: 'rgb(153, 102, 255)',
+        backgroundColor: 'rgba(153, 102, 255, 0.5)',
       }
     ],
   };
@@ -128,9 +150,14 @@ export default function AdminDashboard() {
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-900">Control Chart (Revenue vs Expenses)</h2>
-          <button onClick={downloadCSV} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            Download CSV
-          </button>
+          <div className="space-x-2">
+            <button onClick={downloadCSV} className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+              Download CSV
+            </button>
+            <button onClick={exportToDrive} disabled={exporting} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-green-300 flex-inline items-center">
+              {exporting ? 'Exporting...' : 'Export Data to Google Drive'}
+            </button>
+          </div>
         </div>
         {chartData.length > 0 ? (
           <div className="h-96">
