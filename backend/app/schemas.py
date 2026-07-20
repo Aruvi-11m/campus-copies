@@ -101,7 +101,7 @@ class OrderResponse(BaseModel):
     gst_amount: float
     grand_total: float
     status: str
-    payment_method: str
+    payment_method: Optional[str] = "upi"
     pickup_code: Optional[str] = None
     printer_used: Optional[str] = None
     file_path: str
