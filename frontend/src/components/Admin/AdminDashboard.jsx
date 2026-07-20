@@ -84,7 +84,8 @@ export default function AdminDashboard() {
       alert(`Export successful! File available at:\n${res.data.drive_link}`);
     } catch (err) {
       console.error(err);
-      alert('Export to Drive failed. Ensure your Service Account and Folder ID are configured.');
+      const errMsg = err.response?.data?.detail || err.message || 'Unknown error';
+      alert(`Export to Drive failed:\n${errMsg}`);
     } finally {
       setExporting(false);
     }
