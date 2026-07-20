@@ -24,6 +24,7 @@ export default function OrderManagement() {
       setError(null);
     } catch (err) {
       console.error(err);
+      if (err.response && err.response.status === 401) return;
       setError('Cannot connect to backend server to fetch orders.');
     }
   };

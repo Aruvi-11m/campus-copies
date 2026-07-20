@@ -8,7 +8,8 @@ export default function StudentDashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    Promise.all([fetchOrders(), fetchSettings()]).catch(() => {
+    Promise.all([fetchOrders(), fetchSettings()]).catch((error) => {
+      if (error.response && error.response.status === 401) return;
       setError('Cannot connect to backend server.');
     });
   }, []);

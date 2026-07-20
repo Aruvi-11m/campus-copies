@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from . import models, schemas, database
+from . import models, schemas, database, auth
 from .database import engine
 from .routers import auth_router, orders_router, admin_router, agent_router
 import os
@@ -49,6 +49,25 @@ try:
                             conn.execute(text(sql))
 except Exception as e:
     print("Auto-migration failed:", e)
+
+# Auto-seed admin user if missing
+try:
+    with engine.connect() as conn:
+        db = database.SessionLocal()
+        admin_username = os.environ.get("ADMIN_USERNAME", "admin")
+        admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+        
+        admin = db.query(models.Admin).filter(models.Admin.username == admin_username).first()
+        if not admin:
+            hashed_password = auth.get_password_hash(admin_password)
+            new_admin = models.Admin(username=admin_username, password_hash=hashed_password)
+            db.add(new_admin)
+            db.commit()
+            print(f"Auto-seeded admin user: {admin_username}")
+        db.close()
+except Exception as e:
+    print("Auto-seed admin failed:", e)
+
 app = FastAPI(title="Campus Copies API")
 
 # Allow all origins for dev

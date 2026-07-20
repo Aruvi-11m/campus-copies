@@ -30,7 +30,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    Promise.all([fetchData(), fetchChartData()]).catch(() => {
+    Promise.all([fetchData(), fetchChartData()]).catch((error) => {
+      if (error.response && error.response.status === 401) return;
       setError('Cannot connect to the backend server.');
     });
   }, []);
