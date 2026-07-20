@@ -4,13 +4,6 @@ import json
 import io
 from fastapi import UploadFile
 
-# Try importing Cloudinary
-try:
-    import cloudinary
-    import cloudinary.uploader
-except ImportError:
-    cloudinary = None
-
 # Try importing Google Drive libraries
 try:
     from google.oauth2 import service_account
@@ -27,22 +20,7 @@ if not os.path.exists(STORAGE_DIR):
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def save_file(upload_file: UploadFile, filename: str) -> str:
-    # Option 1: Cloudinary (Incredibly simple setup!)
-    cloudinary_url = os.environ.get("CLOUDINARY_URL")
-    if cloudinary_url and cloudinary:
-        try:
-            # Cloudinary handles setup automatically when CLOUDINARY_URL is in the environment
-            upload_result = cloudinary.uploader.upload(
-                upload_file.file,
-                public_id=filename.split('.')[0],
-                resource_type="auto"
-            )
-            return upload_result.get("secure_url")
-        except Exception as e:
-            print("Cloudinary upload failed, checking other storages. Error:", e)
-            upload_file.file.seek(0)
-
-    # Option 2: Google Drive
+    # Google Drive (Primary Storage)
     service_account_info_str = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
     
