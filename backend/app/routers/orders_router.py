@@ -44,9 +44,6 @@ def create_order(
     db: Session = Depends(database.get_db),
     current_student: models.Student = Depends(deps.get_current_student)
 ):
-    # Verify file is a PDF
-    if file.content_type != "application/pdf" and not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
     # Read PDF to count pages
     try:
