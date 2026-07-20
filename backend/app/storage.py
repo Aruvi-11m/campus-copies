@@ -109,3 +109,39 @@ def save_file(upload_file: UploadFile, filename: str) -> str:
 def get_file_path(filename: str) -> str:
     return os.path.join(STORAGE_DIR, filename)
 
+def _upload_to_drive(media, filename: str, folder_id: str = None) -> dict:
+    service_account_info_str = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if not service_account_info_str or not service_account:
+        raise Exception("Google Drive not configured properly (missing json or libraries).")
+        
+    service_account_info = json.loads(service_account_info_str)
+    creds = service_account.Credentials.from_service_account_info(
+        service_account_info, scopes=SCOPES
+    )
+    service = build('drive', 'v3', credentials=creds)
+    
+    file_metadata = {'name': filename}
+    if folder_id:
+        file_metadata['parents'] = [folder_id]
+        
+    # Upload to Drive
+    drive_file = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id, webViewLink'
+    ).execute()
+    
+    # Make the uploaded file publicly viewable
+    try:
+        permission = {
+            'type': 'anyone',
+            'role': 'reader',
+        }
+        service.permissions().create(
+            fileId=drive_file.get('id'),
+            body=permission
+        ).execute()
+    except Exception as perm_err:
+        print("Failed to set permission on Google Drive file:", perm_err)
+        
+    return drive_file
