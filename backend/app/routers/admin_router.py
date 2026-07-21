@@ -389,3 +389,48 @@ def export_data_to_drive(db: Session = Depends(database.get_db), admin: models.A
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/test-drive")
+def test_drive_connection():
+    import traceback
+    try:
+        service_account_info_str = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+        folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
+        
+        diagnostics = {
+            "folder_id_length": len(folder_id) if folder_id else 0,
+            "folder_id_value": folder_id,
+            "json_length": len(service_account_info_str) if service_account_info_str else 0,
+        }
+        
+        if not service_account_info_str:
+            return {"status": "error", "message": "Missing JSON", "diagnostics": diagnostics}
+            
+        import json
+        try:
+            service_account_info = json.loads(service_account_info_str)
+            diagnostics["parsed_email"] = service_account_info.get("client_email")
+        except Exception as e:
+            return {"status": "error", "message": f"JSON Parse Error: {str(e)}", "diagnostics": diagnostics}
+            
+        from google.oauth2 import service_account
+        from googleapiclient.discovery import build
+        
+        try:
+            creds = service_account.Credentials.from_service_account_info(
+                service_account_info, scopes=['https://www.googleapis.com/auth/drive']
+            )
+            service = build('drive', 'v3', credentials=creds)
+        except Exception as e:
+            return {"status": "error", "message": f"Auth Error: {str(e)}", "diagnostics": diagnostics}
+            
+        # Try to get the folder metadata
+        try:
+            folder = service.files().get(fileId=folder_id, fields="id, name, capabilities").execute()
+            diagnostics["folder_name"] = folder.get("name")
+            diagnostics["capabilities"] = folder.get("capabilities")
+        except Exception as e:
+            return {"status": "error", "message": f"API Error checking folder: {str(e)}", "trace": traceback.format_exc(), "diagnostics": diagnostics}
+            
+        return {"status": "success", "message": "Google Drive connection is PERFECT!", "diagnostics": diagnostics}
+    except Exception as e:
+        return {"status": "error", "message": f"Unknown Error: {str(e)}", "trace": traceback.format_exc()}
