@@ -23,6 +23,7 @@ from app.models.student import Student
 from app.repositories.file_repository import FileRepository
 from app.repositories.order_repository import OrderRepository
 from app.services.pricing_service import PricingService
+from app.services.inventory_service import InventoryService
 
 # Allowed state machine transitions map
 ALLOWED_TRANSITIONS = {
@@ -44,6 +45,7 @@ class OrderService:
         self.order_repo = OrderRepository(db)
         self.file_repo = FileRepository(db)
         self.pricing_service = PricingService(db)
+        self.inventory_service = InventoryService(db)
 
     def generate_unique_pickup_code(self) -> str:
         """Generates a secure, unique 6-character uppercase alphanumeric pickup code with retry loop."""
@@ -162,6 +164,10 @@ class OrderService:
         # Requirement: Transition to PAID requires payment_method specification
         if new_status == OrderStatusEnum.PAID and not payment_method:
             raise ValidationError("Payment method (UPI or CASH) is required when marking order as PAID")
+
+        # Integration: Deduct inventory when order is completed
+        if new_status == OrderStatusEnum.COMPLETED:
+            self.inventory_service.deduct_order_materials(order, admin.id)
 
         updated_order = self.order_repo.update_status(
             order=order,

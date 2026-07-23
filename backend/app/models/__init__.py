@@ -26,6 +26,7 @@ from app.models.order_status_history import OrderStatusHistory
 from app.models.payment import Payment
 from app.models.expense import Expense
 from app.models.ledger_entry import LedgerEntry
+from app.models.inventory import InventoryItem, InventoryTransaction
 
 __all__ = [
     "Student",
@@ -39,6 +40,8 @@ __all__ = [
     "Payment",
     "Expense",
     "LedgerEntry",
+    "InventoryItem",
+    "InventoryTransaction",
     "OrderStatusEnum",
     "PaymentMethodEnum",
     "PrintSideEnum",

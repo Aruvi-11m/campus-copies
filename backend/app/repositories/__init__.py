@@ -11,6 +11,10 @@ from app.repositories.student_repository import StudentRepository
 from app.repositories.payment_repository import PaymentRepository
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.ledger_repository import LedgerRepository
+from app.repositories.inventory_repository import (
+    InventoryItemRepository,
+    InventoryTransactionRepository,
+)
 
 __all__ = [
     "BaseRepository",
@@ -22,4 +26,6 @@ __all__ = [
     "PaymentRepository",
     "ExpenseRepository",
     "LedgerRepository",
+    "InventoryItemRepository",
+    "InventoryTransactionRepository",
 ]

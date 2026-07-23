@@ -37,6 +37,13 @@ from app.schemas.payment import (
     PaymentResponse,
     PaymentVerifyRequest,
 )
+from app.schemas.inventory import (
+    InventoryItemCreate,
+    InventoryItemUpdate,
+    InventoryItemOut,
+    InventoryTransactionOut,
+    InventoryStockAdjustment,
+)
 
 __all__ = [
     "StudentLoginRequest",
@@ -66,4 +73,9 @@ __all__ = [
     "FinanceSummaryResponse",
     "LedgerEntryResponse",
     "PaginatedLedgerResponse",
+    "InventoryItemCreate",
+    "InventoryItemUpdate",
+    "InventoryItemOut",
+    "InventoryTransactionOut",
+    "InventoryStockAdjustment",
 ]
