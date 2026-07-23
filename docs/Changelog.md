@@ -4,6 +4,49 @@ All notable changes to the Campus Copies project will be documented in this file
 
 ---
 
+## [Phase 4 Storage & File Upload Engine] - 2026-07-23
+
+### Version
+`v0.4.0-alpha.1`
+
+### Files Created
+- `backend/app/models/file.py`
+- `backend/app/models/order.py`
+- `backend/app/schemas/file.py`
+- `backend/app/repositories/file_repository.py`
+- `backend/app/services/storage_service.py`
+- `backend/app/api/v1/files.py`
+- `backend/app/tasks/cleanup.py`
+- `backend/app/tasks/__init__.py`
+- `backend/tests/test_storage.py`
+
+### Files Modified
+- `backend/app/models/__init__.py`
+- `backend/app/schemas/__init__.py`
+- `backend/app/repositories/__init__.py`
+- `backend/app/services/__init__.py`
+- `backend/app/api/v1/router.py`
+- `docs/Changelog.md`
+
+### Features Added
+- **OrderFile ORM Model & FileStatusEnum**: SQLAlchemy 2.x `OrderFile` model mapping to `order_files` table with `status` enum (`TEMPORARY`, `ATTACHED`, `ORPHANED`, `DELETED`), UUID keys, size validation, and timestamp fields.
+- **File Repository Layer**: `FileRepository` providing database access methods for file creation, lookup by ID/path, student/order listing, status updates, and temporary file expiration queries.
+- **Storage Service & Validation Engine**: `StorageService` enforcing extension whitelist (`.pdf`, `.doc`, `.docx`, `.ppt`, `.pptx`), max 200MB file size limit, python-magic binary header inspection (blocking renamed executables), UUID storage pathing (`temp/{student_id}/{uuid}.{ext}`), and chunked streaming uploads.
+- **Supabase Private Storage Integration**: Integrated with Supabase Storage private bucket `order-files`.
+- **Signed URL Generator**: Generates 1-hour time-limited signed URLs (`SIGNED_URL_EXPIRY = 3600`) with support for `inline` document viewer and `attachment` disposition headers.
+- **File Management API Routes**:
+  - `POST /api/v1/files/upload` (Multipart file upload, rate-limited to 20/hour)
+  - `GET /api/v1/files/{id}` (File metadata retrieval with owner/admin security checks)
+  - `GET /api/v1/files/{id}/download` (1-hour Signed URL generator with owner/admin security checks)
+  - `DELETE /api/v1/files/{id}` (Atomic deletion of DB metadata and Supabase storage object)
+- **Background Cleanup Task**: `run_temporary_file_cleanup` task purging temporary uploads older than 24 hours.
+- **Automated Test Suite**: Added 10 storage tests in `backend/tests/test_storage.py` covering validation, magic-bytes checks, repository CRUD, signed URLs, owner security, API endpoints, and cleanup tasks. Total backend test count: 31 passed out of 31.
+
+### Bug Fixes
+- Added `libmagic` fallback detection in `StorageService` for systems lacking C libmagic libraries.
+
+---
+
 ## [Phase 3 Authentication & Authorization Engine] - 2026-07-23
 
 ### Version

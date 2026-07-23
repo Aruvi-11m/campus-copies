@@ -12,6 +12,11 @@ from app.schemas.auth import (
     StudentResponse,
     TokenPayload,
 )
+from app.schemas.file import (
+    FileMetadataResponse,
+    FileUploadResponse,
+    SignedUrlResponse,
+)
 
 __all__ = [
     "StudentLoginRequest",
@@ -22,4 +27,7 @@ __all__ = [
     "AdminResponse",
     "AdminAuthResponse",
     "TokenPayload",
+    "FileUploadResponse",
+    "FileMetadataResponse",
+    "SignedUrlResponse",
 ]
