@@ -19,6 +19,7 @@ from app.models.student import Student
 from app.repositories.admin_repository import AdminRepository
 from app.repositories.session_repository import SessionRepository
 from app.repositories.student_repository import StudentRepository
+from app.services.dashboard_service import invalidate_dashboard_cache
 from app.schemas.auth import (
     AdminAuthResponse,
     AdminLoginRequest,
@@ -58,6 +59,7 @@ class AuthService:
                 full_name=request.full_name,
                 department=request.department,
             )
+            invalidate_dashboard_cache()
             logger.info("student_registered", student_id=str(student.id), mobile=student.mobile)
 
         # Generate 24-hour Student JWT

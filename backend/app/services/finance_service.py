@@ -25,6 +25,7 @@ from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.order_repository import OrderRepository
 from app.repositories.payment_repository import PaymentRepository
 from app.services.order_service import OrderService
+from app.services.dashboard_service import invalidate_dashboard_cache
 
 
 class FinanceService:
@@ -140,6 +141,7 @@ class FinanceService:
             payment_method=payment_method.value,
             admin_id=str(admin.id),
         )
+        invalidate_dashboard_cache()
         return payment
 
     def process_refund(
@@ -198,6 +200,7 @@ class FinanceService:
             reason=reason,
             admin_id=str(admin.id),
         )
+        invalidate_dashboard_cache()
         return entry
 
     def create_expense(
@@ -259,6 +262,7 @@ class FinanceService:
             category=category,
             admin_id=str(admin.id),
         )
+        invalidate_dashboard_cache()
         return expense
 
     def get_balance(self) -> dict:

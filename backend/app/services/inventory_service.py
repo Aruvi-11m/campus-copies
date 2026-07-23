@@ -19,6 +19,7 @@ from app.repositories.inventory_repository import (
     InventoryItemRepository,
     InventoryTransactionRepository,
 )
+from app.services.dashboard_service import invalidate_dashboard_cache
 
 
 class InventoryService:
@@ -55,6 +56,7 @@ class InventoryService:
             reason=reason,
         )
         self.txn_repo.append_transaction(txn)
+        invalidate_dashboard_cache()
         return txn
 
     def add_stock(

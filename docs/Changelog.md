@@ -4,6 +4,45 @@ All notable changes to the Campus Copies project will be documented in this file
 
 ---
 
+## [Phase 8 Admin Dashboard, Analytics & Reporting Engine] - 2026-07-23
+
+### Version
+`v0.8.0-alpha.1`
+
+### Files Created
+- `backend/app/schemas/dashboard.py`
+- `backend/app/schemas/analytics.py`
+- `backend/app/schemas/reports.py`
+- `backend/app/repositories/dashboard_repository.py`
+- `backend/app/repositories/analytics_repository.py`
+- `backend/app/repositories/report_repository.py`
+- `backend/app/services/dashboard_service.py`
+- `backend/app/services/analytics_service.py`
+- `backend/app/services/reporting_service.py`
+- `backend/app/api/v1/admin_dashboard.py`
+- `backend/app/api/v1/admin_analytics.py`
+- `backend/app/api/v1/admin_reports.py`
+- `backend/app/api/v1/admin_export.py`
+- `backend/tests/test_analytics.py`
+- `backend/tests/test_reports.py`
+
+### Files Modified
+- `backend/app/api/v1/router.py`
+- `backend/app/services/auth_service.py`
+- `backend/app/services/order_service.py`
+- `backend/app/services/finance_service.py`
+- `backend/app/services/inventory_service.py`
+- `backend/tests/conftest.py`
+
+### Features Added
+- **Admin Dashboard API**: Aggregated real-time metrics with 60-second TTL cache (`cachetools`). Returns pending orders, today's revenue, active students, etc.
+- **Analytics API**: Historical and aggregated analytics for daily revenue, monthly revenue, order statuses, top departments, etc.
+- **Reporting API**: CSV, Excel, and PDF exports for orders, payments, expenses, and inventory data using `openpyxl` and `fpdf2`.
+- **Automated Test Suite**: Added 22 tests in `test_analytics.py` and `test_reports.py`. Total backend test count: 96 passed out of 96.
+- **Bug Fixes**: Corrected field mappings in `ReportRepository` and `AnalyticsRepository` referencing `Student.full_name` and `InventoryItem.item_name`.
+
+---
+
 ## [Phase 6 Payment Engine & Cash Management] - 2026-07-23
 
 ### Version

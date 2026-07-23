@@ -24,6 +24,7 @@ from app.repositories.file_repository import FileRepository
 from app.repositories.order_repository import OrderRepository
 from app.services.pricing_service import PricingService
 from app.services.inventory_service import InventoryService
+from app.services.dashboard_service import invalidate_dashboard_cache
 
 # Allowed state machine transitions map
 ALLOWED_TRANSITIONS = {
@@ -128,6 +129,7 @@ class OrderService:
             student_id=str(student.id),
             total_price=total_price,
         )
+        invalidate_dashboard_cache()
         return order
 
     def update_order_status(
@@ -184,6 +186,7 @@ class OrderService:
             to_status=new_status.value,
             admin_id=str(admin.id),
         )
+        invalidate_dashboard_cache()
         return updated_order
 
     def get_order_by_id(self, order_id: uuid.UUID, requesting_user: Union[Student, Admin]) -> Order:
