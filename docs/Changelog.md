@@ -4,6 +4,52 @@ All notable changes to the Campus Copies project will be documented in this file
 
 ---
 
+## [Phase 5 Order Management Engine] - 2026-07-23
+
+### Version
+`v0.5.0-alpha.1`
+
+### Files Created
+- `backend/app/models/pickup_code.py`
+- `backend/app/models/pricing_setting.py`
+- `backend/app/models/order_status_history.py`
+- `backend/app/repositories/order_repository.py`
+- `backend/app/services/pricing_service.py`
+- `backend/app/services/order_service.py`
+- `backend/app/schemas/order.py`
+- `backend/app/api/v1/orders.py`
+- `backend/app/api/v1/admin_orders.py`
+- `backend/tests/test_orders.py`
+
+### Files Modified
+- `backend/app/models/order.py`
+- `backend/app/models/file.py`
+- `backend/app/models/__init__.py`
+- `backend/app/schemas/__init__.py`
+- `backend/app/repositories/__init__.py`
+- `backend/app/services/__init__.py`
+- `backend/app/api/v1/router.py`
+- `docs/Changelog.md`
+
+### Features Added
+- **Order Engine Models**: Implemented SQLAlchemy 2.x ORM models for `Order`, `PickupCode`, `PricingSetting`, and `OrderStatusHistory` matching `docs/Database.md`.
+- **Order Repository Layer**: `OrderRepository` providing database methods for order creation, retrieval, student order history listing, admin search/filtering/pagination, and status transition logging.
+- **Pricing Engine Service**: `PricingService` computing print job costs using per page rates (single side, double side, multi-page, color), binding rates (spiral, soft cover, hard cover, staple pins), color orientation constraint checks (`COLOR` mode requires `SINGLE_SIDE`), copy limits (1..100), bankers' rounding (`ROUND_HALF_EVEN`), and frozen price snapshotting upon submission.
+- **Order Service & State Machine**: `OrderService` implementing student order submission (validating uploaded file ownership and 1..5 file limits), display ID generation (`CC-2026-XXXX`), 6-character uppercase alphanumeric pickup code generation (`PICKUP_CODE_CHARS`), and strict forward-only state machine validation (`PENDING_PAYMENT` -> `PAID` -> `PRINTING` -> `READY_FOR_PICKUP` -> `COMPLETED`).
+- **State Machine Protection**: Rejects backward transitions, skipped states, and duplicate state updates by raising `ConflictError` (HTTP 409 Conflict).
+- **Order API Routes**:
+  - `POST /api/v1/orders` (Student order creation, rate-limited to 10/hour)
+  - `GET /api/v1/orders` (Student order history with pagination)
+  - `GET /api/v1/orders/{id}` (Order details with student ownership validation and admin override)
+  - `PATCH /api/v1/orders/{id}/status` (Admin order status advancement enforcing state machine)
+  - `GET /api/v1/admin/orders` (Admin order listing supporting search, status filter, department filter, date range filter, and pagination)
+- **Automated Test Suite**: Added 12 order tests in `backend/tests/test_orders.py` covering pricing calculations, color rules, bankers' rounding, price snapshot immutability, state machine transitions, 409 conflict handling, student security, and admin search/filtering. Total backend test count: 43 passed out of 43.
+
+### Bug Fixes
+- Added `BigInteger().with_variant(Integer, "sqlite")` to autoincrement primary keys for SQLite in-memory test compatibility.
+
+---
+
 ## [Phase 4 Storage & File Upload Engine] - 2026-07-23
 
 ### Version

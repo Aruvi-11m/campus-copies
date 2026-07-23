@@ -20,6 +20,9 @@ from app.models.admin import Admin
 from app.models.session import Session
 from app.models.order import Order
 from app.models.file import OrderFile
+from app.models.pickup_code import PickupCode
+from app.models.pricing_setting import PricingSetting
+from app.models.order_status_history import OrderStatusHistory
 
 __all__ = [
     "Student",
@@ -27,6 +30,9 @@ __all__ = [
     "Session",
     "Order",
     "OrderFile",
+    "PickupCode",
+    "PricingSetting",
+    "OrderStatusHistory",
     "OrderStatusEnum",
     "PaymentMethodEnum",
     "PrintSideEnum",

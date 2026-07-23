@@ -87,6 +87,10 @@ class OrderFile(Base):
         "Student",
         backref="files",
     )
+    order: Mapped[Optional["Order"]] = relationship(
+        "Order",
+        back_populates="files",
+    )
 
     def __repr__(self) -> str:
         return f"<OrderFile(id={self.id}, student_id={self.student_id}, name={self.original_name}, status={self.status})>"

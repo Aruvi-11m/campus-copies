@@ -17,6 +17,14 @@ from app.schemas.file import (
     FileUploadResponse,
     SignedUrlResponse,
 )
+from app.schemas.order import (
+    OrderCreateRequest,
+    OrderFileItemResponse,
+    OrderResponse,
+    OrderStatusHistoryResponse,
+    OrderStatusUpdateRequest,
+    PaginatedOrdersResponse,
+)
 
 __all__ = [
     "StudentLoginRequest",
@@ -30,4 +38,10 @@ __all__ = [
     "FileUploadResponse",
     "FileMetadataResponse",
     "SignedUrlResponse",
+    "OrderCreateRequest",
+    "OrderStatusUpdateRequest",
+    "OrderFileItemResponse",
+    "OrderStatusHistoryResponse",
+    "OrderResponse",
+    "PaginatedOrdersResponse",
 ]
