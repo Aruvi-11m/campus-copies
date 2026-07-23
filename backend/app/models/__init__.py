@@ -23,6 +23,9 @@ from app.models.file import OrderFile
 from app.models.pickup_code import PickupCode
 from app.models.pricing_setting import PricingSetting
 from app.models.order_status_history import OrderStatusHistory
+from app.models.payment import Payment
+from app.models.expense import Expense
+from app.models.ledger_entry import LedgerEntry
 
 __all__ = [
     "Student",
@@ -33,6 +36,9 @@ __all__ = [
     "PickupCode",
     "PricingSetting",
     "OrderStatusHistory",
+    "Payment",
+    "Expense",
+    "LedgerEntry",
     "OrderStatusEnum",
     "PaymentMethodEnum",
     "PrintSideEnum",

@@ -8,6 +8,9 @@ from app.repositories.file_repository import FileRepository
 from app.repositories.order_repository import OrderRepository
 from app.repositories.session_repository import SessionRepository
 from app.repositories.student_repository import StudentRepository
+from app.repositories.payment_repository import PaymentRepository
+from app.repositories.expense_repository import ExpenseRepository
+from app.repositories.ledger_repository import LedgerRepository
 
 __all__ = [
     "BaseRepository",
@@ -16,4 +19,7 @@ __all__ = [
     "SessionRepository",
     "FileRepository",
     "OrderRepository",
+    "PaymentRepository",
+    "ExpenseRepository",
+    "LedgerRepository",
 ]

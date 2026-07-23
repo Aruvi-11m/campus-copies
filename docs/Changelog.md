@@ -4,6 +4,51 @@ All notable changes to the Campus Copies project will be documented in this file
 
 ---
 
+## [Phase 6 Payment Engine & Cash Management] - 2026-07-23
+
+### Version
+`v0.6.0-alpha.1`
+
+### Files Created
+- `backend/app/models/payment.py`
+- `backend/app/models/expense.py`
+- `backend/app/models/ledger_entry.py`
+- `backend/app/schemas/payment.py`
+- `backend/app/repositories/payment_repository.py`
+- `backend/app/repositories/expense_repository.py`
+- `backend/app/repositories/ledger_repository.py`
+- `backend/app/services/finance_service.py`
+- `backend/app/api/v1/payments.py`
+- `backend/app/api/v1/expenses.py`
+- `backend/tests/test_finance.py`
+
+### Files Modified
+- `backend/app/models/__init__.py`
+- `backend/app/schemas/__init__.py`
+- `backend/app/repositories/__init__.py`
+- `backend/app/services/__init__.py`
+- `backend/app/api/v1/router.py`
+- `docs/Changelog.md`
+
+### Features Added
+- **Finance Models**: SQLAlchemy 2.x ORM models for `Payment`, `Expense`, and `LedgerEntry`. 
+- **Finance Repositories**: Immutable append-only `LedgerRepository`, `PaymentRepository` enforcing unique order constraints, and `ExpenseRepository` for paginated expenses.
+- **Finance Service**: `FinanceService` implementing robust transaction-protected payment verification with pessimistic locking (`FOR UPDATE`), duplicate prevention, automated transition of `Order` states to `PAID`, cash/UPI tracking, and real-time financial balance aggregation.
+- **API Routes**:
+  - `POST /api/v1/payments/verify` (Admin-only payment verification)
+  - `GET /api/v1/payments/balance` (Admin-only current balance)
+  - `GET /api/v1/payments/summary` (Admin-only financial summary)
+  - `GET /api/v1/payments/ledger` (Admin-only paginated ledger)
+  - `GET /api/v1/payments/{order_id}` (Admin-only payment details)
+  - `POST /api/v1/expenses` (Admin-only expense creation with ledger integration)
+  - `GET /api/v1/expenses` (Admin-only paginated expenses)
+- **Automated Test Suite**: Added 25 tests covering Payment, Expense, Ledger models, repository logic, Finance Service validations, locking, duplicates, state checks, cash balance reduction on expenses, and API enforcement. Total backend test count: 68 passed out of 68.
+
+### Bug Fixes
+- Fixed test fixture issues with `PricingSetting` keyword arguments and JWT token payload dictionaries to match existing definitions.
+
+---
+
 ## [Phase 5 Order Management Engine] - 2026-07-23
 
 ### Version
