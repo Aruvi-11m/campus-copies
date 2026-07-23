@@ -9,10 +9,15 @@ from datetime import datetime, timezone
 from typing import AsyncGenerator
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+
+from app.database import SessionLocal
+from app.repositories.setting_repository import SettingRepository
+from app.services.settings_service import SettingsService
 
 from app.api.v1.router import api_v1_router
 from app.config import settings
@@ -66,6 +71,29 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["Content-Disposition"],
 )
+
+@app.middleware("http")
+async def maintenance_mode_middleware(request: Request, call_next):
+    if request.url.path.startswith("/api/health") or request.url.path.startswith("/api/v1/admin/"):
+        return await call_next(request)
+
+    db = SessionLocal()
+    maintenance_mode = False
+    try:
+        svc = SettingsService(SettingRepository(db))
+        maintenance_mode = svc.get_setting("maintenance_mode")
+    except Exception:
+        pass
+    finally:
+        db.close()
+
+    if maintenance_mode:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": "System is currently under maintenance. Please try again later."}
+        )
+
+    return await call_next(request)
 
 # Register Global Exception Handlers
 app.add_exception_handler(AppException, app_exception_handler)

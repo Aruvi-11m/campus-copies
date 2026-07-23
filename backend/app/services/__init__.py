@@ -8,6 +8,12 @@ from app.services.pricing_service import PricingService
 from app.services.storage_service import StorageService
 from app.services.finance_service import FinanceService
 from app.services.inventory_service import InventoryService
+from app.services.dashboard_service import DashboardService
+from app.services.analytics_service import AnalyticsService
+from app.services.reporting_service import ReportingService
+from app.services.settings_service import SettingsService
+from app.services.audit_service import AuditService
+from app.services.notification_service import NotificationService
 
 __all__ = [
     "AuthService",
@@ -16,4 +22,10 @@ __all__ = [
     "OrderService",
     "FinanceService",
     "InventoryService",
+    "DashboardService",
+    "AnalyticsService",
+    "ReportingService",
+    "SettingsService",
+    "AuditService",
+    "NotificationService",
 ]

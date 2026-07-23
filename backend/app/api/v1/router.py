@@ -17,6 +17,11 @@ from app.api.v1.admin_dashboard import router as admin_dashboard_router
 from app.api.v1.admin_analytics import router as admin_analytics_router
 from app.api.v1.admin_reports import router as admin_reports_router
 from app.api.v1.admin_export import router as admin_export_router
+from app.api.v1.admin_settings import router as admin_settings_router
+from app.api.v1.admin_audit import router as admin_audit_router
+from app.api.v1.admin_notifications import router as admin_notifications_router
+from app.api.v1.admin_system import router as admin_system_router
+from app.api.v1.student_notifications import router as student_notifications_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -32,3 +37,8 @@ api_v1_router.include_router(admin_dashboard_router, prefix="/admin/dashboard", 
 api_v1_router.include_router(admin_analytics_router, prefix="/admin/analytics", tags=["admin-analytics"])
 api_v1_router.include_router(admin_reports_router, prefix="/admin/reports", tags=["admin-reports"])
 api_v1_router.include_router(admin_export_router, prefix="/admin/export", tags=["admin-export"])
+api_v1_router.include_router(admin_settings_router)
+api_v1_router.include_router(admin_audit_router)
+api_v1_router.include_router(admin_notifications_router)
+api_v1_router.include_router(admin_system_router)
+api_v1_router.include_router(student_notifications_router)

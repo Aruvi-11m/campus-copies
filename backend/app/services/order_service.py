@@ -25,6 +25,11 @@ from app.repositories.order_repository import OrderRepository
 from app.services.pricing_service import PricingService
 from app.services.inventory_service import InventoryService
 from app.services.dashboard_service import invalidate_dashboard_cache
+from app.services.audit_service import AuditService
+from app.services.notification_service import NotificationService
+from app.repositories.audit_repository import AuditRepository
+from app.repositories.notification_repository import NotificationRepository
+from app.models.enums import ActorTypeEnum, NotificationTargetEnum, NotificationTypeEnum
 
 # Allowed state machine transitions map
 ALLOWED_TRANSITIONS = {
@@ -178,6 +183,33 @@ class OrderService:
             payment_method=payment_method,
             notes=notes,
         )
+
+        # Event Hooks: Audit Log and Notification
+        try:
+            audit_service = AuditService(AuditRepository(self.db))
+            audit_service.log_action(
+                action="update_order_status",
+                resource_type="order",
+                actor_type=ActorTypeEnum.ADMIN,
+                actor_id=admin.id,
+                resource_id=updated_order.id,
+                old_value={"status": current_status.value},
+                new_value={"status": new_status.value, "payment_method": payment_method.value if payment_method else None, "notes": notes},
+            )
+
+            # Notify student of status change
+            notif_service = NotificationService(NotificationRepository(self.db))
+            notif_service.create_notification(
+                target_user=NotificationTargetEnum.STUDENT,
+                type=NotificationTypeEnum.SYSTEM_ALERT,
+                event_type="order_status_update",
+                title=f"Order {updated_order.display_id} status updated",
+                message=f"Your order status is now {new_status.value}.",
+                target_user_id=updated_order.student_id,
+                order_id=updated_order.id,
+            )
+        except Exception as e:
+            logger.error("order_status_event_hooks_failed", error=str(e), order_id=str(order.id))
 
         logger.info(
             "order_status_advanced",

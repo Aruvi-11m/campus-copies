@@ -20,6 +20,9 @@ from app.repositories.inventory_repository import (
     InventoryTransactionRepository,
 )
 from app.services.dashboard_service import invalidate_dashboard_cache
+from app.services.notification_service import NotificationService
+from app.repositories.notification_repository import NotificationRepository
+from app.models.enums import NotificationTargetEnum, NotificationTypeEnum
 
 
 class InventoryService:
@@ -56,6 +59,21 @@ class InventoryService:
             reason=reason,
         )
         self.txn_repo.append_transaction(txn)
+        
+        # Low stock notification hook
+        if item.current_stock <= item.min_threshold:
+            try:
+                notif_service = NotificationService(NotificationRepository(self.db))
+                notif_service.broadcast(
+                    target_user=NotificationTargetEnum.ADMIN,
+                    type=NotificationTypeEnum.SYSTEM_ALERT,
+                    event_type="low_inventory",
+                    title=f"Low Stock: {item.item_name}",
+                    message=f"{item.item_name} has reached low stock level. Current: {item.current_stock}",
+                )
+            except Exception:
+                pass
+
         invalidate_dashboard_cache()
         return txn
 

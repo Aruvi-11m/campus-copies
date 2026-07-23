@@ -10,6 +10,8 @@ from app.models.enums import (
     InventoryCategoryEnum,
     InventorySubCategoryEnum,
     InventoryTxnTypeEnum,
+    NotificationTargetEnum,
+    NotificationTypeEnum,
     OrderStatusEnum,
     PaymentMethodEnum,
     PickupCodeStatusEnum,
@@ -27,6 +29,9 @@ from app.models.payment import Payment
 from app.models.expense import Expense
 from app.models.ledger_entry import LedgerEntry
 from app.models.inventory import InventoryItem, InventoryTransaction
+from app.models.setting import ApplicationSetting
+from app.models.audit import AuditLog
+from app.models.notification import Notification
 
 __all__ = [
     "Student",
@@ -42,6 +47,9 @@ __all__ = [
     "LedgerEntry",
     "InventoryItem",
     "InventoryTransaction",
+    "ApplicationSetting",
+    "AuditLog",
+    "Notification",
     "OrderStatusEnum",
     "PaymentMethodEnum",
     "PrintSideEnum",
@@ -53,4 +61,6 @@ __all__ = [
     "InventorySubCategoryEnum",
     "InventoryTxnTypeEnum",
     "ActorTypeEnum",
+    "NotificationTargetEnum",
+    "NotificationTypeEnum",
 ]

@@ -4,6 +4,65 @@ All notable changes to the Campus Copies project will be documented in this file
 
 ---
 
+## [Phase 9 System Administration, Settings, Audit Logs & Notifications] - 2026-07-23
+
+### Version
+`v0.9.0-alpha.1`
+
+### Files Created
+- `backend/app/models/setting.py`
+- `backend/app/models/audit.py`
+- `backend/app/models/notification.py`
+- `backend/app/schemas/setting.py`
+- `backend/app/schemas/audit.py`
+- `backend/app/schemas/notification.py`
+- `backend/app/schemas/system.py`
+- `backend/app/repositories/setting_repository.py`
+- `backend/app/repositories/audit_repository.py`
+- `backend/app/repositories/notification_repository.py`
+- `backend/app/services/settings_service.py`
+- `backend/app/services/audit_service.py`
+- `backend/app/services/notification_service.py`
+- `backend/app/api/v1/admin_settings.py`
+- `backend/app/api/v1/admin_audit.py`
+- `backend/app/api/v1/admin_notifications.py`
+- `backend/app/api/v1/admin_system.py`
+- `backend/app/api/v1/student_notifications.py`
+- `backend/tests/test_settings.py`
+- `backend/tests/test_audit.py`
+- `backend/tests/test_notifications.py`
+- `backend/tests/test_system.py`
+
+### Files Modified
+- `backend/app/models/__init__.py`
+- `backend/app/models/enums.py`
+- `backend/app/schemas/__init__.py`
+- `backend/app/repositories/__init__.py`
+- `backend/app/services/__init__.py`
+- `backend/app/api/v1/router.py`
+- `backend/app/main.py`
+- `backend/app/services/auth_service.py`
+- `backend/app/services/finance_service.py`
+- `backend/app/services/inventory_service.py`
+- `backend/app/services/order_service.py`
+- `backend/app/services/storage_service.py`
+- `docs/Changelog.md`
+
+### Features Added
+- **Settings Engine**: Implemented `ApplicationSetting` model to store configurable values (e.g. print rates, bind rate, maintenance mode). Supports type-safe retrieval via `SettingsService`.
+- **Audit Engine**: Created `AuditLog` model to track state changes. Hooked into Auth, Finance, Inventory, Orders, Storage to record all critical actions.
+- **Notification Engine**: Developed `Notification` model and service to push alerts (e.g., Low Stock, Order Ready). Added APIs for Admins and Students to list and dismiss notifications.
+- **System APIs**: Added endpoints for system health (`/api/v1/admin/system/health`) and SQLite DB backup logic.
+- **Maintenance Mode Middleware**: Blocks non-admin requests when `maintenance_mode` setting is enabled.
+- **Automated Test Suite**: Added tests for settings, audit logs, notifications, and system APIs, bringing the total to 106 backend tests passing.
+
+### Bug Fixes
+- Handled `AttributeError` on `InventoryItem.min_threshold` during low stock checks.
+- Fixed `PaginatedResponse` schema implementation for notification and audit APIs to properly map `page`, `size`, `pages` variables.
+- Replaced `JSONB` with `JSON` column types for generic SQLite compatibility.
+
+---
+
 ## [Phase 8 Admin Dashboard, Analytics & Reporting Engine] - 2026-07-23
 
 ### Version

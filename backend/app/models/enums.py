@@ -79,3 +79,15 @@ class ActorTypeEnum(str, Enum):
     STUDENT = "STUDENT"
     ADMIN = "ADMIN"
     SYSTEM = "SYSTEM"
+
+
+class NotificationTargetEnum(str, Enum):
+    STUDENT = "STUDENT"
+    ADMIN = "ADMIN"
+    SYSTEM = "SYSTEM"
+
+
+class NotificationTypeEnum(str, Enum):
+    ALERT = "ALERT"
+    INFO = "INFO"
+    SYSTEM = "SYSTEM"

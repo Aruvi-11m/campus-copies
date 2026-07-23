@@ -26,6 +26,9 @@ from app.repositories.order_repository import OrderRepository
 from app.repositories.payment_repository import PaymentRepository
 from app.services.order_service import OrderService
 from app.services.dashboard_service import invalidate_dashboard_cache
+from app.services.audit_service import AuditService
+from app.repositories.audit_repository import AuditRepository
+from app.models.enums import ActorTypeEnum
 
 
 class FinanceService:
@@ -133,6 +136,19 @@ class FinanceService:
         self.db.refresh(payment)
         self.db.refresh(order)
 
+        try:
+            audit_service = AuditService(AuditRepository(self.db))
+            audit_service.log_action(
+                action="verify_payment",
+                resource_type="payment",
+                actor_type=ActorTypeEnum.ADMIN,
+                actor_id=admin.id,
+                resource_id=payment.id,
+                new_value={"amount": payment_amount, "method": payment_method.value},
+            )
+        except Exception:
+            pass
+
         logger.info(
             "payment_verified_successfully",
             order_id=str(order.id),
@@ -191,6 +207,19 @@ class FinanceService:
 
         self.db.commit()
         self.db.refresh(entry)
+
+        try:
+            audit_service = AuditService(AuditRepository(self.db))
+            audit_service.log_action(
+                action="verify_payment",
+                resource_type="payment",
+                actor_type=ActorTypeEnum.ADMIN,
+                actor_id=admin.id,
+                resource_id=payment.id,
+                new_value={"amount": payment_amount, "method": payment_method.value},
+            )
+        except Exception:
+            pass
 
         logger.info(
             "refund_processed",
@@ -254,6 +283,19 @@ class FinanceService:
 
         self.db.commit()
         self.db.refresh(expense)
+
+        try:
+            audit_service = AuditService(AuditRepository(self.db))
+            audit_service.log_action(
+                action="create_expense",
+                resource_type="expense",
+                actor_type=ActorTypeEnum.ADMIN,
+                actor_id=admin.id,
+                resource_id=expense.id,
+                new_value={"amount": expense_amount, "category": category},
+            )
+        except Exception:
+            pass
 
         logger.info(
             "expense_created",

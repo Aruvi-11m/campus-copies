@@ -44,6 +44,24 @@ from app.schemas.inventory import (
     InventoryTransactionOut,
     InventoryStockAdjustment,
 )
+from app.schemas.setting import (
+    ApplicationSettingCreate,
+    ApplicationSettingUpdate,
+    ApplicationSettingResponse,
+)
+from app.schemas.audit import (
+    AuditLogCreate,
+    AuditLogResponse,
+)
+from app.schemas.notification import (
+    NotificationCreate,
+    NotificationUpdate,
+    NotificationResponse,
+)
+from app.schemas.system import (
+    SystemHealthResponse,
+    SystemBackupResponse,
+)
 
 __all__ = [
     "StudentLoginRequest",
@@ -78,4 +96,14 @@ __all__ = [
     "InventoryItemOut",
     "InventoryTransactionOut",
     "InventoryStockAdjustment",
+    "ApplicationSettingCreate",
+    "ApplicationSettingUpdate",
+    "ApplicationSettingResponse",
+    "AuditLogCreate",
+    "AuditLogResponse",
+    "NotificationCreate",
+    "NotificationUpdate",
+    "NotificationResponse",
+    "SystemHealthResponse",
+    "SystemBackupResponse",
 ]
