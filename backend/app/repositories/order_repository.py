@@ -5,6 +5,7 @@ Data access methods for Order, PickupCode, OrderStatusHistory, and PricingSettin
 Grounding: docs/Database.md §3.3, §3.6, §3.7, §3.15, docs/BackendSpecification.md §5
 """
 
+import secrets
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple
@@ -39,6 +40,23 @@ class OrderRepository(BaseRepository[Order]):
             .first()
         )
 
+    def get_by_id_for_update(self, order_id: uuid.UUID) -> Optional[Order]:
+        """Locks order row for concurrent status updates (pessimistic locking)."""
+        query = (
+            self.db.query(Order)
+            .options(
+                joinedload(Order.student),
+                joinedload(Order.files),
+                joinedload(Order.pickup_code),
+                joinedload(Order.status_history),
+            )
+            .filter(Order.id == order_id)
+        )
+        # Apply row-level FOR UPDATE lock on supported dialects (e.g. PostgreSQL)
+        if self.db.bind and self.db.bind.dialect.name == "postgresql":
+            query = query.with_for_update()
+        return query.first()
+
     def get_by_display_id(self, display_id: str) -> Optional[Order]:
         return (
             self.db.query(Order)
@@ -48,6 +66,13 @@ class OrderRepository(BaseRepository[Order]):
                 joinedload(Order.pickup_code),
             )
             .filter(Order.display_id == display_id)
+            .first()
+        )
+
+    def get_active_pickup_code(self, code: str) -> Optional[PickupCode]:
+        return (
+            self.db.query(PickupCode)
+            .filter(PickupCode.code == code)
             .first()
         )
 
@@ -119,7 +144,6 @@ class OrderRepository(BaseRepository[Order]):
             .first()
         )
         if not pricing:
-            # Seed default pricing settings if database has no rows
             pricing = PricingSetting(
                 bw_single_side=1.50,
                 bw_double_side=1.00,
@@ -138,15 +162,13 @@ class OrderRepository(BaseRepository[Order]):
 
     def generate_unique_display_id(self) -> str:
         current_year = datetime.now(timezone.utc).year
-        prefix = f"CC-{current_year}-"
         count = self.db.query(func.count(Order.id)).scalar() or 0
-        display_id = f"{prefix}{(count + 1):04d}"
-        # Fallback loop if display_id collision
-        attempts = 0
-        while self.get_by_display_id(display_id) and attempts < 100:
-            attempts += 1
-            display_id = f"{prefix}{(count + 1 + attempts):04d}"
-        return display_id
+        for offset in range(100):
+            candidate = f"CC-{current_year}-{(count + 1 + offset):04d}"
+            if not self.get_by_display_id(candidate):
+                return candidate
+        # Fallback to random hex suffix if sequential collisions occur
+        return f"CC-{current_year}-{secrets.token_hex(2).upper()}"
 
     def create_order(
         self,
@@ -182,7 +204,8 @@ class OrderRepository(BaseRepository[Order]):
         # Attach files to order
         for f in files:
             f.order_id = order.id
-            f.status = f.status.ATTACHED if hasattr(f.status, 'ATTACHED') else f.status
+            if hasattr(f.status, 'ATTACHED'):
+                f.status = f.status.ATTACHED
 
         # Create pickup code
         pickup_code = PickupCode(

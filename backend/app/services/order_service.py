@@ -45,9 +45,13 @@ class OrderService:
         self.file_repo = FileRepository(db)
         self.pricing_service = PricingService(db)
 
-    @staticmethod
-    def generate_pickup_code() -> str:
-        """Generates a secure 6-character uppercase alphanumeric pickup code."""
+    def generate_unique_pickup_code(self) -> str:
+        """Generates a secure, unique 6-character uppercase alphanumeric pickup code with retry loop."""
+        for _ in range(10):
+            candidate = "".join(secrets.choice(PICKUP_CODE_CHARS) for _ in range(6))
+            if not self.order_repo.get_active_pickup_code(candidate):
+                return candidate
+        # Fallback if 10 consecutive collisions occur
         return "".join(secrets.choice(PICKUP_CODE_CHARS) for _ in range(6))
 
     def create_order(
@@ -60,7 +64,7 @@ class OrderService:
         copies: int,
     ) -> Order:
         """
-        Creates a new print order for an authenticated student.
+        Creates a new print order for an authenticated student in a single atomic transaction.
         Validates file ownership, count, pricing snapshotting, and initial state.
         """
         if not file_ids:
@@ -98,7 +102,7 @@ class OrderService:
         )
 
         display_id = self.order_repo.generate_unique_display_id()
-        pickup_code_str = self.generate_pickup_code()
+        pickup_code_str = self.generate_unique_pickup_code()
 
         order = self.order_repo.create_order(
             student_id=student.id,
@@ -134,9 +138,10 @@ class OrderService:
     ) -> Order:
         """
         Advances order status using strict forward-only state machine transition logic.
+        Uses pessimistic row-level locking for concurrency protection.
         Raises ConflictError (HTTP 409) on invalid transition attempt.
         """
-        order = self.order_repo.get_by_id(order_id)
+        order = self.order_repo.get_by_id_for_update(order_id)
         if not order:
             raise NotFoundError(f"Order '{order_id}' was not found")
 

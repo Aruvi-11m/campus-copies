@@ -8,7 +8,7 @@ Grounding: docs/Database.md §3.3, docs/DatabaseRelationships.md §2.3
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Integer, Numeric, String
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, Enum, ForeignKey, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -18,6 +18,13 @@ from app.models.enums import BindingTypeEnum, ColorModeEnum, OrderStatusEnum, Pa
 
 class Order(Base):
     __tablename__ = "orders"
+    __table_args__ = (
+        CheckConstraint("copies >= 1 AND copies <= 100", name="ck_orders_copies_range"),
+        CheckConstraint("page_count >= 1", name="ck_orders_page_count_positive"),
+        CheckConstraint("per_page_price >= 0.00", name="ck_orders_per_page_price_positive"),
+        CheckConstraint("binding_price >= 0.00", name="ck_orders_binding_price_positive"),
+        CheckConstraint("total_price >= 0.00", name="ck_orders_total_price_positive"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -87,6 +94,7 @@ class Order(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
+        index=True,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
