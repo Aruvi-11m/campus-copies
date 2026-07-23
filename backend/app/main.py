@@ -14,6 +14,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+from app.api.v1.router import api_v1_router
 from app.config import settings
 from app.core.errors import (
     AppException,
@@ -70,6 +71,9 @@ app.add_middleware(
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)
+
+# Mount API V1 Routers
+app.include_router(api_v1_router)
 
 
 @app.get("/api/health", status_code=status.HTTP_200_OK, tags=["Health"])

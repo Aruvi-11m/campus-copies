@@ -5,10 +5,11 @@ Grounding: docs/API.md §1.5, docs/BackendSpecification.md §12
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from fastapi import Request, status
-from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from app.core.logging import logger
 
 
@@ -97,7 +98,7 @@ def build_error_response(code: str, message: str, status_code: int, details: Opt
         "error": {
             "code": code,
             "message": message,
-            "details": details,
+            "details": jsonable_encoder(details) if details is not None else None,
         },
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
@@ -126,7 +127,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     logger.warning(
         "request_validation_failed",
         path=request.url.path,
-        errors=exc.errors(),
+        errors=jsonable_encoder(exc.errors()),
     )
     return build_error_response(
         code="VALIDATION_ERROR",
