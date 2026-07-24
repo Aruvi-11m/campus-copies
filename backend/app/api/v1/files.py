@@ -8,6 +8,7 @@ Grounding: docs/API.md §5, docs/BackendSpecification.md §7
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, Union
+
 from fastapi import APIRouter, Depends, File, Query, Request, UploadFile, status
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
@@ -26,7 +27,9 @@ router = APIRouter(prefix="/files", tags=["File Management"])
 limiter = Limiter(key_func=get_remote_address)
 
 
-def build_success_response(data: dict, status_code: int = status.HTTP_200_OK) -> JSONResponse:
+def build_success_response(
+    data: dict, status_code: int = status.HTTP_200_OK
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={
@@ -60,7 +63,9 @@ async def upload_file(
         upload_file=file,
         student_id=current_student.id,
     )
-    return build_success_response(result.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
+    return build_success_response(
+        result.model_dump(mode="json"), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.get(
@@ -83,6 +88,7 @@ async def get_file_metadata(
 
     if not file_record or file_record.status == FileStatusEnum.DELETED:
         from app.core.errors import NotFoundError
+
         raise NotFoundError("Requested file record was not found")
 
     if isinstance(current_user, Student):
@@ -113,6 +119,7 @@ async def get_file_signed_url(
 
     if not file_record or file_record.status == FileStatusEnum.DELETED:
         from app.core.errors import NotFoundError
+
         raise NotFoundError("Requested file record was not found")
 
     if isinstance(current_user, Student):
@@ -141,6 +148,7 @@ async def delete_file(
 
     if not file_record or file_record.status == FileStatusEnum.DELETED:
         from app.core.errors import NotFoundError
+
         raise NotFoundError("Requested file record was not found")
 
     if isinstance(current_user, Student):

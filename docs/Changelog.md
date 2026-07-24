@@ -4,6 +4,43 @@ All notable changes to the Campus Copies project will be documented in this file
 
 ---
 
+---
+
+## [Phase 10 Verification & Production Readiness] - 2026-07-23
+
+### Version
+`v1.0.0-rc.1`
+
+### Files Created
+- `backend/Dockerfile`
+- `backend/.dockerignore`
+- `docker-compose.yml`
+- `nginx/default.conf`
+- `prometheus.yml`
+- `backend/app/core/scheduler.py`
+- `backend/app/services/email_service.py`
+- `.github/workflows/ci.yml`
+
+### Files Modified
+- `backend/requirements.txt`
+- `backend/app/main.py`
+- `backend/alembic/env.py`
+- `docs/Changelog.md`
+
+### Features Added
+- **Production Dependencies**: Added `prometheus-fastapi-instrumentator`, `aiosmtplib`, `apscheduler`, `gunicorn`, and `alembic` to `requirements.txt`.
+- **Alembic Migrations**: Initialized Alembic and generated the initial schema baseline migration (`81c3e3d55b90_initial_baseline.py`).
+- **Background Jobs**: Integrated `APScheduler` in `app/core/scheduler.py` to run `cleanup_temporary_files` daily at midnight. Start and shutdown hooks added to FastAPI lifespan.
+- **Monitoring & Metrics**: Integrated `prometheus-fastapi-instrumentator` in `app/main.py` to expose `/metrics` for Prometheus scraping.
+- **Email Service**: Added `email_service.py` with `aiosmtplib` to send asynchronous HTML emails (configurable via environment variables).
+- **Dockerization**: Created multi-service Docker configuration (`Dockerfile`, `.dockerignore`, `docker-compose.yml`, `nginx/default.conf`, `prometheus.yml`) for API, Nginx reverse proxy, and Prometheus.
+- **CI/CD Pipeline**: Added GitHub Actions workflow (`.github/workflows/ci.yml`) to automatically run linting (`ruff`, `black`, `isort`, `bandit`, `mypy`), execute tests (`pytest --cov`), and build the Docker image on push/PR to main.
+- **Code Formatting & Linting**: Ran `black`, `isort`, `ruff` across `backend/app` fixing formatting and import order.
+
+### Bug Fixes
+- None
+
+
 ## [Phase 9 System Administration, Settings, Audit Logs & Notifications] - 2026-07-23
 
 ### Version

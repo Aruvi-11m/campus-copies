@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class DashboardStatsResponse(BaseModel):
     total_orders: int
     today_orders: int

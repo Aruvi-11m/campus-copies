@@ -7,6 +7,7 @@ Grounding: docs/API.md §7, docs/BackendSpecification.md §1
 
 import uuid
 from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
@@ -141,6 +142,7 @@ def get_payment_for_order(
     payment = finance_service.get_payment_by_order_id(order_id)
     if not payment:
         from app.core.errors import NotFoundError
+
         raise NotFoundError(f"No payment found for order '{order_id}'")
     return {
         "success": True,

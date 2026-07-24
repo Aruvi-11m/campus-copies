@@ -1,5 +1,6 @@
 import uuid
 from typing import Any, Optional, Sequence
+
 from cachetools import TTLCache
 from fastapi import HTTPException
 
@@ -47,7 +48,7 @@ class SettingsService:
         # Return default if not in DB
         if key in self.DEFAULT_SETTINGS:
             return self.DEFAULT_SETTINGS[key]
-        
+
         raise HTTPException(status_code=404, detail=f"Setting {key} not found")
 
     def get_all_settings(self) -> dict[str, Any]:
@@ -61,20 +62,22 @@ class SettingsService:
         self, key: str, value: Any, admin_id: Optional[uuid.UUID] = None
     ) -> ApplicationSetting:
         self.validate_setting(key, value)
-        
+
         setting = self.repository.get_by_key(key)
         if setting:
             setting = self.repository.update(setting, value, admin_id=admin_id)
         else:
             setting = self.repository.create(key, value, admin_id=admin_id)
-            
+
         # Invalidate cache
         if key in self._cache:
             del self._cache[key]
-            
+
         return setting
 
-    def bulk_update(self, settings_map: dict[str, Any], admin_id: Optional[uuid.UUID] = None) -> None:
+    def bulk_update(
+        self, settings_map: dict[str, Any], admin_id: Optional[uuid.UUID] = None
+    ) -> None:
         for key, value in settings_map.items():
             self.update_setting(key, value, admin_id=admin_id)
 
@@ -85,18 +88,34 @@ class SettingsService:
     def validate_setting(self, key: str, value: Any) -> None:
         if key not in self.DEFAULT_SETTINGS:
             raise HTTPException(status_code=400, detail=f"Unknown setting key: {key}")
-            
+
         # Type validation
         expected_type = type(self.DEFAULT_SETTINGS[key])
         if expected_type == float and isinstance(value, int):
             value = float(value)
         if not isinstance(value, expected_type):
-            raise HTTPException(status_code=400, detail=f"Setting {key} expects type {expected_type.__name__}")
-            
+            raise HTTPException(
+                status_code=400,
+                detail=f"Setting {key} expects type {expected_type.__name__}",
+            )
+
         # Specific validation rules
-        if key in ["bw_single_side", "bw_double_side", "bw_multi_page", "color_single_side", "spiral_binding_price", "soft_binding_price", "gst_percentage"]:
+        if key in [
+            "bw_single_side",
+            "bw_double_side",
+            "bw_multi_page",
+            "color_single_side",
+            "spiral_binding_price",
+            "soft_binding_price",
+            "gst_percentage",
+        ]:
             if value < 0:
-                raise HTTPException(status_code=400, detail=f"Setting {key} must be positive")
+                raise HTTPException(
+                    status_code=400, detail=f"Setting {key} must be positive"
+                )
         if key == "max_upload_size_mb":
             if value < 1 or value > 1024:
-                raise HTTPException(status_code=400, detail="max_upload_size_mb must be between 1 and 1024")
+                raise HTTPException(
+                    status_code=400,
+                    detail="max_upload_size_mb must be between 1 and 1024",
+                )

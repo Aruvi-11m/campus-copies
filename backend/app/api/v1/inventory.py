@@ -7,6 +7,7 @@ Grounding: docs/API.md
 
 import uuid
 from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -40,11 +41,13 @@ def create_inventory_item(
 ):
     """Creates a new inventory item."""
     repo = InventoryItemRepository(db)
-    
+
     # Check duplicate
     if repo.get_by_item_code(item_data.item_code):
-        raise ConflictError(f"Inventory item with code '{item_data.item_code}' already exists")
-    
+        raise ConflictError(
+            f"Inventory item with code '{item_data.item_code}' already exists"
+        )
+
     new_item = InventoryItem(
         item_code=item_data.item_code,
         item_name=item_data.item_name,
@@ -145,7 +148,7 @@ def adjust_inventory_stock(
     For removing: WASTAGE, ADJUSTMENT (quantity_change > 0 is passed to remove_stock)
     """
     inventory_service = InventoryService(db)
-    
+
     if adjustment.transaction_type == InventoryTxnTypeEnum.RESTOCK:
         txn = inventory_service.add_stock(
             item_id=item_id,
@@ -153,7 +156,10 @@ def adjust_inventory_stock(
             quantity=adjustment.quantity_change,
             reason=adjustment.reason,
         )
-    elif adjustment.transaction_type in (InventoryTxnTypeEnum.WASTAGE, InventoryTxnTypeEnum.ADJUSTMENT):
+    elif adjustment.transaction_type in (
+        InventoryTxnTypeEnum.WASTAGE,
+        InventoryTxnTypeEnum.ADJUSTMENT,
+    ):
         txn = inventory_service.remove_stock(
             item_id=item_id,
             admin_id=current_admin.id,
@@ -162,7 +168,9 @@ def adjust_inventory_stock(
             reason=adjustment.reason,
         )
     else:
-        raise ConflictError(f"Manual stock adjustment cannot use type {adjustment.transaction_type.value}")
-        
+        raise ConflictError(
+            f"Manual stock adjustment cannot use type {adjustment.transaction_type.value}"
+        )
+
     db.commit()
     return txn

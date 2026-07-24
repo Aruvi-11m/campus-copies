@@ -11,25 +11,40 @@ import string
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple, Union
+
 from sqlalchemy.orm import Session
 
-from app.core.errors import ConflictError, NotFoundError, PermissionDeniedError, ValidationError
+from app.core.errors import (
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+    ValidationError,
+)
 from app.core.logging import logger
 from app.models.admin import Admin
-from app.models.enums import BindingTypeEnum, ColorModeEnum, FileStatusEnum, OrderStatusEnum, PaymentMethodEnum, PrintSideEnum
+from app.models.enums import (
+    ActorTypeEnum,
+    BindingTypeEnum,
+    ColorModeEnum,
+    FileStatusEnum,
+    NotificationTargetEnum,
+    NotificationTypeEnum,
+    OrderStatusEnum,
+    PaymentMethodEnum,
+    PrintSideEnum,
+)
 from app.models.file import OrderFile
 from app.models.order import Order
 from app.models.student import Student
-from app.repositories.file_repository import FileRepository
-from app.repositories.order_repository import OrderRepository
-from app.services.pricing_service import PricingService
-from app.services.inventory_service import InventoryService
-from app.services.dashboard_service import invalidate_dashboard_cache
-from app.services.audit_service import AuditService
-from app.services.notification_service import NotificationService
 from app.repositories.audit_repository import AuditRepository
+from app.repositories.file_repository import FileRepository
 from app.repositories.notification_repository import NotificationRepository
-from app.models.enums import ActorTypeEnum, NotificationTargetEnum, NotificationTypeEnum
+from app.repositories.order_repository import OrderRepository
+from app.services.audit_service import AuditService
+from app.services.dashboard_service import invalidate_dashboard_cache
+from app.services.inventory_service import InventoryService
+from app.services.notification_service import NotificationService
+from app.services.pricing_service import PricingService
 
 # Allowed state machine transitions map
 ALLOWED_TRANSITIONS = {
@@ -76,7 +91,9 @@ class OrderService:
         Validates file ownership, count, pricing snapshotting, and initial state.
         """
         if not file_ids:
-            raise ValidationError("At least one uploaded file is required to submit an order")
+            raise ValidationError(
+                "At least one uploaded file is required to submit an order"
+            )
 
         if len(file_ids) > 5:
             raise ValidationError("Maximum 5 uploaded files permitted per order")
@@ -93,20 +110,26 @@ class OrderService:
             if not file_rec:
                 raise NotFoundError(f"Uploaded file record '{file_id}' not found")
             if file_rec.student_id != student.id:
-                raise PermissionDeniedError(f"Access denied: You do not own file '{file_id}'")
+                raise PermissionDeniedError(
+                    f"Access denied: You do not own file '{file_id}'"
+                )
             if file_rec.order_id is not None:
-                raise ConflictError(f"File '{file_id}' is already attached to an existing order")
+                raise ConflictError(
+                    f"File '{file_id}' is already attached to an existing order"
+                )
             files.append(file_rec)
             # Default placeholder page_count is 1 per file until parser is integrated
             total_page_count += 1
 
         # Calculate pricing snapshot
-        per_page_price, binding_price, total_price = self.pricing_service.calculate_price(
-            print_side=print_side,
-            color_mode=color_mode,
-            binding_type=binding_type,
-            copies=copies,
-            page_count=total_page_count,
+        per_page_price, binding_price, total_price = (
+            self.pricing_service.calculate_price(
+                print_side=print_side,
+                color_mode=color_mode,
+                binding_type=binding_type,
+                copies=copies,
+                page_count=total_page_count,
+            )
         )
 
         display_id = self.order_repo.generate_unique_display_id()
@@ -170,7 +193,9 @@ class OrderService:
 
         # Requirement: Transition to PAID requires payment_method specification
         if new_status == OrderStatusEnum.PAID and not payment_method:
-            raise ValidationError("Payment method (UPI or CASH) is required when marking order as PAID")
+            raise ValidationError(
+                "Payment method (UPI or CASH) is required when marking order as PAID"
+            )
 
         # Integration: Deduct inventory when order is completed
         if new_status == OrderStatusEnum.COMPLETED:
@@ -194,7 +219,11 @@ class OrderService:
                 actor_id=admin.id,
                 resource_id=updated_order.id,
                 old_value={"status": current_status.value},
-                new_value={"status": new_status.value, "payment_method": payment_method.value if payment_method else None, "notes": notes},
+                new_value={
+                    "status": new_status.value,
+                    "payment_method": payment_method.value if payment_method else None,
+                    "notes": notes,
+                },
             )
 
             # Notify student of status change
@@ -209,7 +238,9 @@ class OrderService:
                 order_id=updated_order.id,
             )
         except Exception as e:
-            logger.error("order_status_event_hooks_failed", error=str(e), order_id=str(order.id))
+            logger.error(
+                "order_status_event_hooks_failed", error=str(e), order_id=str(order.id)
+            )
 
         logger.info(
             "order_status_advanced",
@@ -221,7 +252,9 @@ class OrderService:
         invalidate_dashboard_cache()
         return updated_order
 
-    def get_order_by_id(self, order_id: uuid.UUID, requesting_user: Union[Student, Admin]) -> Order:
+    def get_order_by_id(
+        self, order_id: uuid.UUID, requesting_user: Union[Student, Admin]
+    ) -> Order:
         """
         Retrieves order details with student ownership validation (Admins bypass).
         """
@@ -229,7 +262,10 @@ class OrderService:
         if not order:
             raise NotFoundError(f"Order '{order_id}' was not found")
 
-        if isinstance(requesting_user, Student) and order.student_id != requesting_user.id:
+        if (
+            isinstance(requesting_user, Student)
+            and order.student_id != requesting_user.id
+        ):
             raise PermissionDeniedError("Access denied: You do not own this order")
 
         return order

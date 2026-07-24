@@ -5,8 +5,9 @@ Calculates print job pricing, enforces color/orientation constraints, and provid
 Grounding: docs/BusinessRules.md §4, docs/BackendSpecification.md §8
 """
 
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import ROUND_HALF_EVEN, Decimal
 from typing import Dict, Optional, Tuple
+
 from sqlalchemy.orm import Session
 
 from app.core.errors import ValidationError
@@ -49,8 +50,13 @@ class PricingService:
             raise ValidationError("Page count must be at least 1")
 
         # Validate Color Rule: Color mode requires SINGLE_SIDE
-        if color_mode == ColorModeEnum.COLOR and print_side != PrintSideEnum.SINGLE_SIDE:
-            raise ValidationError("Color printing is only supported for Single Side orientation")
+        if (
+            color_mode == ColorModeEnum.COLOR
+            and print_side != PrintSideEnum.SINGLE_SIDE
+        ):
+            raise ValidationError(
+                "Color printing is only supported for Single Side orientation"
+            )
 
         # Load active pricing rates
         pricing = custom_pricing or self.order_repo.get_current_pricing_settings()

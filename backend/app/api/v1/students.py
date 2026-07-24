@@ -6,6 +6,7 @@ Grounding: docs/API.md §3.2, docs/BackendSpecification.md §3
 """
 
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 

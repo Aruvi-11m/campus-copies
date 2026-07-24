@@ -8,7 +8,17 @@ Grounding: docs/Database.md §3.10, docs/BusinessRules.md §9
 import uuid
 from datetime import date, datetime, timezone
 from typing import Optional
-from sqlalchemy import CheckConstraint, Date, DateTime, Enum, ForeignKey, Numeric, String, Text
+
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -75,4 +85,6 @@ class Expense(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Expense(id={self.id}, category={self.category}, amount={self.amount})>"
+        return (
+            f"<Expense(id={self.id}, category={self.category}, amount={self.amount})>"
+        )

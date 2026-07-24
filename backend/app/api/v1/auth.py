@@ -6,6 +6,7 @@ Grounding: docs/API.md §3.1, §4.1, docs/BackendSpecification.md §3
 """
 
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
@@ -25,7 +26,9 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 limiter = Limiter(key_func=get_remote_address)
 
 
-def build_success_response(data: dict, status_code: int = status.HTTP_200_OK) -> JSONResponse:
+def build_success_response(
+    data: dict, status_code: int = status.HTTP_200_OK
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={

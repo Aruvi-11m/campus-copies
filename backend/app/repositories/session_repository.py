@@ -8,6 +8,7 @@ Grounding: docs/Database.md §3.16, docs/BackendSpecification.md §5
 import uuid
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.session import Session as AdminSession
@@ -20,9 +21,7 @@ class SessionRepository(BaseRepository[AdminSession]):
 
     def get_by_jti(self, jwt_jti: str) -> Optional[AdminSession]:
         return (
-            self.db.query(AdminSession)
-            .filter(AdminSession.jwt_jti == jwt_jti)
-            .first()
+            self.db.query(AdminSession).filter(AdminSession.jwt_jti == jwt_jti).first()
         )
 
     def create_session(

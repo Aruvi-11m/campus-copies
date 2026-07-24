@@ -1,8 +1,8 @@
 import uuid
 from typing import Optional, Sequence
 
-from app.models.notification import Notification
 from app.models.enums import NotificationTargetEnum, NotificationTypeEnum
+from app.models.notification import Notification
 from app.repositories.notification_repository import NotificationRepository
 
 
@@ -48,10 +48,14 @@ class NotificationService:
             message=message,
         )
 
-    def get_admin_notifications(self, skip: int = 0, limit: int = 100) -> tuple[Sequence[Notification], int]:
+    def get_admin_notifications(
+        self, skip: int = 0, limit: int = 100
+    ) -> tuple[Sequence[Notification], int]:
         return self.repository.list_for_admin(skip, limit)
 
-    def get_student_notifications(self, student_id: uuid.UUID, skip: int = 0, limit: int = 100) -> tuple[Sequence[Notification], int]:
+    def get_student_notifications(
+        self, student_id: uuid.UUID, skip: int = 0, limit: int = 100
+    ) -> tuple[Sequence[Notification], int]:
         return self.repository.list_for_student(student_id, skip, limit)
 
     def mark_read(self, notif_id: int) -> Optional[Notification]:

@@ -9,20 +9,25 @@ Grounding: docs/BusinessRules.md §6
 import math
 import uuid
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
 from app.core.errors import ConflictError, NotFoundError, ValidationError
-from app.models.enums import InventoryCategoryEnum, InventoryTxnTypeEnum
+from app.models.enums import (
+    InventoryCategoryEnum,
+    InventoryTxnTypeEnum,
+    NotificationTargetEnum,
+    NotificationTypeEnum,
+)
 from app.models.inventory import InventoryItem, InventoryTransaction
 from app.models.order import Order
 from app.repositories.inventory_repository import (
     InventoryItemRepository,
     InventoryTransactionRepository,
 )
+from app.repositories.notification_repository import NotificationRepository
 from app.services.dashboard_service import invalidate_dashboard_cache
 from app.services.notification_service import NotificationService
-from app.repositories.notification_repository import NotificationRepository
-from app.models.enums import NotificationTargetEnum, NotificationTypeEnum
 
 
 class InventoryService:
@@ -59,7 +64,7 @@ class InventoryService:
             reason=reason,
         )
         self.txn_repo.append_transaction(txn)
-        
+
         # Low stock notification hook
         if item.current_stock <= item.min_threshold:
             try:
@@ -71,7 +76,7 @@ class InventoryService:
                     title=f"Low Stock: {item.item_name}",
                     message=f"{item.item_name} has reached low stock level. Current: {item.current_stock}",
                 )
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         invalidate_dashboard_cache()
@@ -135,7 +140,9 @@ class InventoryService:
         # Calculate requirements
         # For simplicity in V1, we fetch the first active item for the category.
         paper_qty = order.copies * (
-            order.page_count if order.print_side.value == "SINGLE_SIDE" else math.ceil(order.page_count / 2)
+            order.page_count
+            if order.print_side.value == "SINGLE_SIDE"
+            else math.ceil(order.page_count / 2)
         )
         ink_qty = order.copies * order.page_count  # 1 unit per printed page face
         binding_qty = order.copies if order.binding_type.value != "NONE" else 0

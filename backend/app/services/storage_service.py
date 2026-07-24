@@ -12,6 +12,7 @@ import os
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import BinaryIO, Optional, Tuple
+
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from supabase import Client, create_client
@@ -27,6 +28,7 @@ from app.schemas.file import FileMetadataResponse, FileUploadResponse, SignedUrl
 # Attempt to load python-magic libmagic binding with graceful fallback
 try:
     import magic
+
     _HAS_MAGIC = True
 except Exception as _magic_err:
     _HAS_MAGIC = False
@@ -40,7 +42,12 @@ ALLOWED_MIME_TYPES = {
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "application/x-pdf",
 }
-FORBIDDEN_MIME_PREFIXES = ("application/x-executable", "application/x-msdownload", "application/x-sharedlib", "application/x-dsexec")
+FORBIDDEN_MIME_PREFIXES = (
+    "application/x-executable",
+    "application/x-msdownload",
+    "application/x-sharedlib",
+    "application/x-dsexec",
+)
 
 
 class StorageService:
@@ -63,7 +70,9 @@ class StorageService:
                     logger.warning("supabase_client_init_failed", error=str(err))
         return self._supabase_client
 
-    def validate_file_extension_and_size(self, filename: str, content_length: Optional[int] = None) -> str:
+    def validate_file_extension_and_size(
+        self, filename: str, content_length: Optional[int] = None
+    ) -> str:
         """
         Validates file extension against whitelist.
         """
@@ -115,7 +124,9 @@ class StorageService:
         # Basic mime match checks for PDF
         if ext == ".pdf" and "pdf" not in detected_mime.lower():
             if not header_bytes.startswith(b"%PDF"):
-                raise FileValidationError("File binary header signature does not match PDF extension")
+                raise FileValidationError(
+                    "File binary header signature does not match PDF extension"
+                )
 
         return detected_mime
 
@@ -164,7 +175,9 @@ class StorageService:
         storage_path = f"temp/{student_id}/{file_id}{ext}"
 
         # Upload to Supabase Storage private bucket
-        self._upload_to_supabase_storage(storage_path, file_buffer.getvalue(), detected_mime)
+        self._upload_to_supabase_storage(
+            storage_path, file_buffer.getvalue(), detected_mime
+        )
 
         # Persist file metadata in database
         file_record = self.file_repo.create(
@@ -194,7 +207,9 @@ class StorageService:
             storage_path=storage_path,
         )
 
-    def _upload_to_supabase_storage(self, storage_path: str, file_bytes: bytes, mime_type: str) -> None:
+    def _upload_to_supabase_storage(
+        self, storage_path: str, file_bytes: bytes, mime_type: str
+    ) -> None:
         """Uploads binary payload to Supabase Storage bucket."""
         if self.supabase_client:
             try:
@@ -204,7 +219,11 @@ class StorageService:
                     file_options={"content-type": mime_type, "upsert": "true"},
                 )
             except Exception as err:
-                logger.error("supabase_storage_upload_error", storage_path=storage_path, error=str(err))
+                logger.error(
+                    "supabase_storage_upload_error",
+                    storage_path=storage_path,
+                    error=str(err),
+                )
 
     def generate_signed_url(
         self,
@@ -219,17 +238,29 @@ class StorageService:
 
         if self.supabase_client:
             try:
-                response = self.supabase_client.storage.from_(settings.STORAGE_BUCKET).create_signed_url(
+                response = self.supabase_client.storage.from_(
+                    settings.STORAGE_BUCKET
+                ).create_signed_url(
                     path=file_record.storage_path,
                     expires_in=expires_in,
-                    options={"download": file_record.original_name if disposition == "attachment" else False},
+                    options={
+                        "download": (
+                            file_record.original_name
+                            if disposition == "attachment"
+                            else False
+                        )
+                    },
                 )
                 if isinstance(response, dict) and "signedURL" in response:
                     signed_url = response["signedURL"]
                 elif hasattr(response, "signed_url"):
                     signed_url = response.signed_url
             except Exception as err:
-                logger.error("supabase_signed_url_error", storage_path=file_record.storage_path, error=str(err))
+                logger.error(
+                    "supabase_signed_url_error",
+                    storage_path=file_record.storage_path,
+                    error=str(err),
+                )
 
         if not signed_url:
             # Fallback signed URL format for testing
@@ -250,12 +281,22 @@ class StorageService:
         """
         if self.supabase_client:
             try:
-                self.supabase_client.storage.from_(settings.STORAGE_BUCKET).remove([file_record.storage_path])
+                self.supabase_client.storage.from_(settings.STORAGE_BUCKET).remove(
+                    [file_record.storage_path]
+                )
             except Exception as err:
-                logger.error("supabase_storage_delete_error", storage_path=file_record.storage_path, error=str(err))
+                logger.error(
+                    "supabase_storage_delete_error",
+                    storage_path=file_record.storage_path,
+                    error=str(err),
+                )
 
         self.file_repo.delete(file_record)
-        logger.info("file_deleted_successfully", file_id=str(file_record.id), path=file_record.storage_path)
+        logger.info(
+            "file_deleted_successfully",
+            file_id=str(file_record.id),
+            path=file_record.storage_path,
+        )
 
     def cleanup_expired_temporary_files(self) -> int:
         """
@@ -270,7 +311,9 @@ class StorageService:
                 self.delete_file(file_rec)
                 purged_count += 1
             except Exception as err:
-                logger.error("cleanup_task_file_error", file_id=str(file_rec.id), error=str(err))
+                logger.error(
+                    "cleanup_task_file_error", file_id=str(file_rec.id), error=str(err)
+                )
 
         logger.info("cleanup_expired_files_task_completed", purged_count=purged_count)
         return purged_count

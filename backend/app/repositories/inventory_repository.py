@@ -7,6 +7,7 @@ Grounding: docs/Database.md §3.8, §3.9
 
 import uuid
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.inventory import InventoryItem, InventoryTransaction
@@ -35,7 +36,10 @@ class InventoryItemRepository(BaseRepository[InventoryItem]):
             )
         except Exception as e:
             # Fallback for SQLite which doesn't support SELECT FOR UPDATE
-            if "sqlite" in str(e).lower() or "sqlite" in self.db.bind.dialect.name.lower():
+            if (
+                "sqlite" in str(e).lower()
+                or "sqlite" in self.db.bind.dialect.name.lower()
+            ):
                 return self.get_by_id(item_id)
             raise
 
@@ -59,7 +63,9 @@ class InventoryTransactionRepository(BaseRepository[InventoryTransaction]):
     def __init__(self, db: Session):
         super().__init__(InventoryTransaction, db)
 
-    def append_transaction(self, transaction: InventoryTransaction) -> InventoryTransaction:
+    def append_transaction(
+        self, transaction: InventoryTransaction
+    ) -> InventoryTransaction:
         """Appends a transaction (append-only ledger)."""
         self.db.add(transaction)
         self.db.flush()

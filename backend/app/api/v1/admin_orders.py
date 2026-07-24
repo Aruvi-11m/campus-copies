@@ -8,6 +8,7 @@ Grounding: docs/API.md §4.5, docs/BackendSpecification.md §8
 import math
 from datetime import datetime, timezone
 from typing import Optional
+
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -22,7 +23,9 @@ from app.services.order_service import OrderService
 router = APIRouter(prefix="/admin/orders", tags=["Admin Order Management"])
 
 
-def build_success_response(data: dict, status_code: int = status.HTTP_200_OK) -> JSONResponse:
+def build_success_response(
+    data: dict, status_code: int = status.HTTP_200_OK
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={
@@ -41,8 +44,12 @@ def build_success_response(data: dict, status_code: int = status.HTTP_200_OK) ->
     summary="Admin Search & Filter Orders",
 )
 async def list_admin_orders(
-    search: Optional[str] = Query(None, description="Search by display ID, student name, or mobile"),
-    order_status: Optional[OrderStatusEnum] = Query(None, alias="status", description="Filter by order status"),
+    search: Optional[str] = Query(
+        None, description="Search by display ID, student name, or mobile"
+    ),
+    order_status: Optional[OrderStatusEnum] = Query(
+        None, alias="status", description="Filter by order status"
+    ),
     department: Optional[str] = Query(None, description="Filter by student department"),
     date_from: Optional[datetime] = Query(None, description="Filter from created date"),
     date_to: Optional[datetime] = Query(None, description="Filter to created date"),

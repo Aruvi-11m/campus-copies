@@ -8,26 +8,35 @@ Grounding: docs/API.md §7, docs/BusinessRules.md §5, §9
 import uuid
 from datetime import date, datetime
 from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.enums import PaymentMethodEnum
-
 
 # ──────────────────────────────────────────────────
 # Payment Schemas
 # ──────────────────────────────────────────────────
 
+
 class PaymentVerifyRequest(BaseModel):
-    order_id: uuid.UUID = Field(..., description="UUID of the order to verify payment for")
-    amount: float = Field(..., gt=0.00, description="Payment amount (must match order total_price)")
+    order_id: uuid.UUID = Field(
+        ..., description="UUID of the order to verify payment for"
+    )
+    amount: float = Field(
+        ..., gt=0.00, description="Payment amount (must match order total_price)"
+    )
     payment_method: PaymentMethodEnum = Field(..., description="UPI or CASH")
-    notes: Optional[str] = Field(default=None, description="Optional verification notes")
+    notes: Optional[str] = Field(
+        default=None, description="Optional verification notes"
+    )
 
 
 class PaymentRefundRequest(BaseModel):
     order_id: uuid.UUID = Field(..., description="UUID of the order to refund")
     amount: float = Field(..., gt=0.00, description="Refund amount")
-    reason: str = Field(..., min_length=1, max_length=500, description="Reason for refund")
+    reason: str = Field(
+        ..., min_length=1, max_length=500, description="Reason for refund"
+    )
 
 
 class PaymentResponse(BaseModel):
@@ -47,7 +56,11 @@ class PaymentResponse(BaseModel):
             id=payment.id,
             order_id=payment.order_id,
             amount=float(payment.amount),
-            payment_method=payment.payment_method.value if hasattr(payment.payment_method, 'value') else str(payment.payment_method),
+            payment_method=(
+                payment.payment_method.value
+                if hasattr(payment.payment_method, "value")
+                else str(payment.payment_method)
+            ),
             verified_by_admin_id=payment.verified_by_admin_id,
             payment_date=payment.payment_date,
             notes=payment.notes,
@@ -58,12 +71,24 @@ class PaymentResponse(BaseModel):
 # Expense Schemas
 # ──────────────────────────────────────────────────
 
+
 class ExpenseCreateRequest(BaseModel):
     amount: float = Field(..., gt=0.00, description="Expense amount")
-    category: str = Field(..., min_length=1, max_length=50, description="Expense category (e.g., MATERIALS, UTILITIES)")
-    description: str = Field(..., min_length=1, max_length=1000, description="Expense description")
-    expense_date: Optional[date] = Field(default=None, description="Date expense incurred (defaults to today)")
-    payment_method: PaymentMethodEnum = Field(default=PaymentMethodEnum.CASH, description="UPI or CASH")
+    category: str = Field(
+        ...,
+        min_length=1,
+        max_length=50,
+        description="Expense category (e.g., MATERIALS, UTILITIES)",
+    )
+    description: str = Field(
+        ..., min_length=1, max_length=1000, description="Expense description"
+    )
+    expense_date: Optional[date] = Field(
+        default=None, description="Date expense incurred (defaults to today)"
+    )
+    payment_method: PaymentMethodEnum = Field(
+        default=PaymentMethodEnum.CASH, description="UPI or CASH"
+    )
 
 
 class ExpenseResponse(BaseModel):
@@ -86,7 +111,11 @@ class ExpenseResponse(BaseModel):
             category=expense.category,
             description=expense.description,
             expense_date=expense.expense_date,
-            payment_method=expense.payment_method.value if hasattr(expense.payment_method, 'value') else str(expense.payment_method),
+            payment_method=(
+                expense.payment_method.value
+                if hasattr(expense.payment_method, "value")
+                else str(expense.payment_method)
+            ),
             created_by_admin_id=expense.created_by_admin_id,
             created_at=expense.created_at,
         )
@@ -104,6 +133,7 @@ class PaginatedExpensesResponse(BaseModel):
 # Finance / Ledger Schemas
 # ──────────────────────────────────────────────────
 
+
 class FinanceBalanceResponse(BaseModel):
     cash_in_hand: float = Field(..., description="Current physical cash balance")
     total_upi_revenue: float = Field(..., description="Total UPI revenue collected")
@@ -116,7 +146,9 @@ class FinanceBalanceResponse(BaseModel):
 class FinanceSummaryResponse(BaseModel):
     period: str = Field(..., description="Summary period (daily/weekly/monthly/yearly)")
     date: Optional[str] = None
-    total_orders_paid: int = Field(default=0, description="Orders with verified payment in period")
+    total_orders_paid: int = Field(
+        default=0, description="Orders with verified payment in period"
+    )
     total_revenue: float = Field(default=0.00, description="Gross revenue in period")
     upi_revenue: float = Field(default=0.00, description="UPI revenue in period")
     cash_revenue: float = Field(default=0.00, description="Cash revenue in period")

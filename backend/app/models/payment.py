@@ -8,7 +8,16 @@ Grounding: docs/Database.md §3.5, docs/BusinessRules.md §5
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Numeric, String, Text
+
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

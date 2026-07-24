@@ -8,6 +8,7 @@ Grounding: docs/BusinessRules.md §9 (BR-FIN-01)
 import uuid
 from datetime import date, datetime
 from typing import List, Optional, Tuple
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 

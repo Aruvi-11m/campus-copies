@@ -8,6 +8,7 @@ Grounding: docs/API.md §9.2-9.3, docs/BackendSpecification.md §1
 import uuid
 from datetime import date
 from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 

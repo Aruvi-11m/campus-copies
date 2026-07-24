@@ -7,15 +7,27 @@ Grounding: docs/BackendSpecification.md §9, docs/SecuritySpecification.md §11
 
 import logging
 import sys
+
 import structlog
+
 from app.config import settings
 
 
-def redact_sensitive_params(logger: structlog.types.WrappedLogger, method_name: str, event_dict: structlog.types.EventDict) -> structlog.types.EventDict:
+def redact_sensitive_params(
+    logger: structlog.types.WrappedLogger,
+    method_name: str,
+    event_dict: structlog.types.EventDict,
+) -> structlog.types.EventDict:
     """
     Processor to redact sensitive token or password fields from log events.
     """
-    sensitive_keys = {"token", "password", "authorization", "jwt_secret", "service_role_key"}
+    sensitive_keys = {
+        "token",
+        "password",
+        "authorization",
+        "jwt_secret",
+        "service_role_key",
+    }
     for key in list(event_dict.keys()):
         if key.lower() in sensitive_keys:
             event_dict[key] = "[REDACTED]"
@@ -24,6 +36,7 @@ def redact_sensitive_params(logger: structlog.types.WrappedLogger, method_name: 
     url = event_dict.get("url") or event_dict.get("path")
     if isinstance(url, str) and "token=" in url:
         import re
+
         event_dict["url"] = re.sub(r"token=[^&]+", "token=[REDACTED]", url)
 
     return event_dict

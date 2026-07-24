@@ -11,6 +11,7 @@ from decimal import Decimal
 from typing import Optional
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -20,10 +21,9 @@ from sqlalchemy import (
     String,
     Text,
     func,
-    BigInteger,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 from app.models.enums import (
@@ -35,7 +35,7 @@ from app.models.enums import (
 
 class InventoryItem(Base):
     __tablename__ = "inventory_items"
-    
+
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     item_code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     item_name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -70,8 +70,12 @@ class InventoryItem(Base):
 
 class InventoryTransaction(Base):
     __tablename__ = "inventory_transactions"
-    
-    id: Mapped[int] = mapped_column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
+
+    id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(Integer, "sqlite"),
+        primary_key=True,
+        autoincrement=True,
+    )
     item_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("inventory_items.id", ondelete="RESTRICT"), nullable=False
     )

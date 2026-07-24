@@ -6,10 +6,12 @@ Grounding: docs/API.md §1.5, docs/BackendSpecification.md §12
 
 from datetime import datetime, timezone
 from typing import Any, Optional
+
 from fastapi import Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+
 from app.core.logging import logger
 
 
@@ -31,7 +33,9 @@ class AppException(Exception):
 
 
 class AuthenticationError(AppException):
-    def __init__(self, message: str = "Authentication failed", details: Optional[Any] = None):
+    def __init__(
+        self, message: str = "Authentication failed", details: Optional[Any] = None
+    ):
         super().__init__(
             message=message,
             code="UNAUTHORIZED",
@@ -41,7 +45,9 @@ class AuthenticationError(AppException):
 
 
 class PermissionDeniedError(AppException):
-    def __init__(self, message: str = "Permission denied", details: Optional[Any] = None):
+    def __init__(
+        self, message: str = "Permission denied", details: Optional[Any] = None
+    ):
         super().__init__(
             message=message,
             code="FORBIDDEN",
@@ -51,7 +57,9 @@ class PermissionDeniedError(AppException):
 
 
 class NotFoundError(AppException):
-    def __init__(self, message: str = "Resource not found", details: Optional[Any] = None):
+    def __init__(
+        self, message: str = "Resource not found", details: Optional[Any] = None
+    ):
         super().__init__(
             message=message,
             code="NOT_FOUND",
@@ -61,7 +69,9 @@ class NotFoundError(AppException):
 
 
 class ValidationError(AppException):
-    def __init__(self, message: str = "Validation failed", details: Optional[Any] = None):
+    def __init__(
+        self, message: str = "Validation failed", details: Optional[Any] = None
+    ):
         super().__init__(
             message=message,
             code="VALIDATION_ERROR",
@@ -71,7 +81,9 @@ class ValidationError(AppException):
 
 
 class ConflictError(AppException):
-    def __init__(self, message: str = "Conflict detected", details: Optional[Any] = None):
+    def __init__(
+        self, message: str = "Conflict detected", details: Optional[Any] = None
+    ):
         super().__init__(
             message=message,
             code="CONFLICT",
@@ -81,7 +93,9 @@ class ConflictError(AppException):
 
 
 class FileValidationError(AppException):
-    def __init__(self, message: str = "Invalid file payload", details: Optional[Any] = None):
+    def __init__(
+        self, message: str = "Invalid file payload", details: Optional[Any] = None
+    ):
         super().__init__(
             message=message,
             code="INVALID_FILE",
@@ -90,7 +104,9 @@ class FileValidationError(AppException):
         )
 
 
-def build_error_response(code: str, message: str, status_code: int, details: Optional[Any] = None) -> JSONResponse:
+def build_error_response(
+    code: str, message: str, status_code: int, details: Optional[Any] = None
+) -> JSONResponse:
     """Helper to format standard JSON error envelope."""
     payload = {
         "success": False,
@@ -122,7 +138,9 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
     )
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """Handler for Pydantic / FastAPI request validation errors."""
     logger.warning(
         "request_validation_failed",

@@ -9,11 +9,18 @@ import secrets
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple
+
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.admin import Admin
-from app.models.enums import BindingTypeEnum, ColorModeEnum, OrderStatusEnum, PaymentMethodEnum, PrintSideEnum
+from app.models.enums import (
+    BindingTypeEnum,
+    ColorModeEnum,
+    OrderStatusEnum,
+    PaymentMethodEnum,
+    PrintSideEnum,
+)
 from app.models.file import OrderFile
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
@@ -70,11 +77,7 @@ class OrderRepository(BaseRepository[Order]):
         )
 
     def get_active_pickup_code(self, code: str) -> Optional[PickupCode]:
-        return (
-            self.db.query(PickupCode)
-            .filter(PickupCode.code == code)
-            .first()
-        )
+        return self.db.query(PickupCode).filter(PickupCode.code == code).first()
 
     def list_by_student(
         self,
@@ -104,17 +107,23 @@ class OrderRepository(BaseRepository[Order]):
         skip: int = 0,
         limit: int = 50,
     ) -> Tuple[List[Order], int]:
-        query = self.db.query(Order).join(Student, Order.student_id == Student.id).options(
-            joinedload(Order.student),
-            joinedload(Order.files),
-            joinedload(Order.pickup_code),
+        query = (
+            self.db.query(Order)
+            .join(Student, Order.student_id == Student.id)
+            .options(
+                joinedload(Order.student),
+                joinedload(Order.files),
+                joinedload(Order.pickup_code),
+            )
         )
 
         if status:
             query = query.filter(Order.status == status)
 
         if department and department.strip():
-            query = query.filter(func.lower(Student.department) == department.strip().lower())
+            query = query.filter(
+                func.lower(Student.department) == department.strip().lower()
+            )
 
         if date_from:
             query = query.filter(Order.created_at >= date_from)
@@ -204,7 +213,7 @@ class OrderRepository(BaseRepository[Order]):
         # Attach files to order
         for f in files:
             f.order_id = order.id
-            if hasattr(f.status, 'ATTACHED'):
+            if hasattr(f.status, "ATTACHED"):
                 f.status = f.status.ATTACHED
 
         # Create pickup code

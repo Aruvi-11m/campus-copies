@@ -8,11 +8,12 @@ Grounding: docs/Database.md §3.10, docs/BackendSpecification.md §5
 import uuid
 from datetime import date, datetime
 from typing import List, Optional, Tuple
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.models.expense import Expense
 from app.models.enums import PaymentMethodEnum
+from app.models.expense import Expense
 from app.repositories.base import BaseRepository
 
 
@@ -31,7 +32,9 @@ class ExpenseRepository(BaseRepository[Expense]):
         query = self.db.query(Expense)
 
         if category and category.strip():
-            query = query.filter(func.lower(Expense.category) == category.strip().lower())
+            query = query.filter(
+                func.lower(Expense.category) == category.strip().lower()
+            )
 
         if date_from:
             query = query.filter(Expense.expense_date >= date_from)
@@ -40,7 +43,9 @@ class ExpenseRepository(BaseRepository[Expense]):
             query = query.filter(Expense.expense_date <= date_to)
 
         total = query.count()
-        items = query.order_by(Expense.created_at.desc()).offset(skip).limit(limit).all()
+        items = (
+            query.order_by(Expense.created_at.desc()).offset(skip).limit(limit).all()
+        )
         return items, total
 
     def sum_expenses_by_method(

@@ -7,6 +7,7 @@ Grounding: docs/BackendSpecification.md §3, docs/SecuritySpecification.md §3
 
 import uuid
 from typing import Dict, Optional, Union
+
 from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
@@ -67,7 +68,9 @@ def get_current_user(
         student_repo = StudentRepository(db)
         student = student_repo.get_by_id(user_uuid)
         if not student or student.is_deleted:
-            raise AuthenticationError("Student account not found or has been deactivated")
+            raise AuthenticationError(
+                "Student account not found or has been deactivated"
+            )
         return student
 
     elif role == "admin":
@@ -103,7 +106,9 @@ def require_admin(user: Union[Student, Admin] = Depends(get_current_user)) -> Ad
     return user
 
 
-def verify_student_ownership(current_student: Student, target_student_id: uuid.UUID) -> None:
+def verify_student_ownership(
+    current_student: Student, target_student_id: uuid.UUID
+) -> None:
     """
     Helper function to enforce horizontal privilege isolation.
     Ensures student can only view/modify their own resources.

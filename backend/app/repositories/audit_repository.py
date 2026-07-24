@@ -54,7 +54,7 @@ class AuditRepository:
         action: Optional[str] = None,
     ) -> tuple[Sequence[AuditLog], int]:
         stmt = select(AuditLog)
-        
+
         if start_date:
             stmt = stmt.where(AuditLog.timestamp >= start_date)
         if end_date:
@@ -65,9 +65,9 @@ class AuditRepository:
             stmt = stmt.where(AuditLog.resource_type == resource_type)
         if action:
             stmt = stmt.where(AuditLog.action == action)
-            
+
         stmt = stmt.order_by(AuditLog.timestamp.desc())
-        
+
         total_stmt = select(AuditLog)
         if start_date:
             total_stmt = total_stmt.where(AuditLog.timestamp >= start_date)
@@ -79,9 +79,9 @@ class AuditRepository:
             total_stmt = total_stmt.where(AuditLog.resource_type == resource_type)
         if action:
             total_stmt = total_stmt.where(AuditLog.action == action)
-            
-        total = len(self.db.scalars(total_stmt).all()) # simplistic count
-        
+
+        total = len(self.db.scalars(total_stmt).all())  # simplistic count
+
         logs = self.db.scalars(stmt.offset(skip).limit(limit)).all()
         return logs, total
 

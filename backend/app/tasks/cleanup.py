@@ -6,6 +6,7 @@ Grounding: docs/BackendSpecification.md §10
 """
 
 from sqlalchemy.orm import Session
+
 from app.core.logging import logger
 from app.services.storage_service import StorageService
 

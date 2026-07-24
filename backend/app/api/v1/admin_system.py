@@ -12,10 +12,10 @@ from app.schemas.system import SystemBackupResponse, SystemHealthResponse
 
 router = APIRouter(prefix="/admin/system", tags=["Admin System"])
 
+
 @router.get("/health", response_model=SystemHealthResponse)
 def get_system_health(
-    admin: Admin = Depends(require_admin),
-    db: Session = Depends(get_db)
+    admin: Admin = Depends(require_admin), db: Session = Depends(get_db)
 ):
     try:
         db.execute(text("SELECT 1"))
@@ -34,6 +34,7 @@ def get_system_health(
         python_version=sys.version,
     )
 
+
 @router.get("/backup", response_model=SystemBackupResponse)
 def get_system_backup(
     admin: Admin = Depends(require_admin),
@@ -45,6 +46,7 @@ def get_system_backup(
         last_backup_timestamp=datetime.utcnow().isoformat() + "Z",
         database_size_estimate="15 MB",
     )
+
 
 @router.get("/version", response_model=SystemBackupResponse)
 def get_system_version(

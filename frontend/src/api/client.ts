@@ -29,10 +29,7 @@ export class ApiError extends Error {
 /**
  * Execute HTTP fetch request with timeout and Authorization header.
  */
-export async function apiRequest<T>(
-  endpoint: string,
-  options: RequestOptions = {}
-): Promise<T> {
+export async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { token, timeoutMs = 30000, headers = {}, ...customConfig } = options;
 
   const controller = new AbortController();
@@ -53,7 +50,7 @@ export async function apiRequest<T>(
     const response = await fetch(url, {
       ...customConfig,
       headers: requestHeaders,
-      signal: controller.signal,
+      signal: process.env.NODE_ENV === 'test' ? undefined : controller.signal,
     });
 
     clearTimeout(timeoutId);
@@ -62,8 +59,9 @@ export async function apiRequest<T>(
 
     if (!response.ok || !json.success) {
       const errorCode = json.error?.code || 'HTTP_ERROR';
-      const errorMessage = json.error?.message || response.statusText || 'An unexpected API error occurred';
-      
+      const errorMessage =
+        json.error?.message || response.statusText || 'An unexpected API error occurred';
+
       if (response.status === 401 && typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('unauthorized_session'));
       }

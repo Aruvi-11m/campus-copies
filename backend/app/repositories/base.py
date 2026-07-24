@@ -6,7 +6,9 @@ Grounding: docs/BackendSpecification.md §5
 """
 
 from typing import Generic, List, Optional, Type, TypeVar
+
 from sqlalchemy.orm import Session
+
 from app.database import Base
 
 ModelType = TypeVar("ModelType", bound=Base)

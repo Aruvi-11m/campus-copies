@@ -8,6 +8,7 @@ Grounding: docs/BackendSpecification.md §3, §4, docs/SecuritySpecification.md 
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -19,7 +20,6 @@ from app.models.student import Student
 from app.repositories.admin_repository import AdminRepository
 from app.repositories.session_repository import SessionRepository
 from app.repositories.student_repository import StudentRepository
-from app.services.dashboard_service import invalidate_dashboard_cache
 from app.schemas.auth import (
     AdminAuthResponse,
     AdminLoginRequest,
@@ -28,6 +28,7 @@ from app.schemas.auth import (
     StudentLoginRequest,
     StudentResponse,
 )
+from app.services.dashboard_service import invalidate_dashboard_cache
 
 
 class AuthService:
@@ -51,7 +52,9 @@ class AuthService:
                 full_name=request.full_name,
                 department=request.department,
             )
-            logger.info("student_logged_in", student_id=str(student.id), mobile=student.mobile)
+            logger.info(
+                "student_logged_in", student_id=str(student.id), mobile=student.mobile
+            )
         else:
             # Auto-register new student
             student = self.student_repo.create(
@@ -60,7 +63,9 @@ class AuthService:
                 department=request.department,
             )
             invalidate_dashboard_cache()
-            logger.info("student_registered", student_id=str(student.id), mobile=student.mobile)
+            logger.info(
+                "student_registered", student_id=str(student.id), mobile=student.mobile
+            )
 
         # Generate 24-hour Student JWT
         expires_delta = timedelta(hours=settings.STUDENT_TOKEN_EXPIRE_HOURS)
@@ -93,11 +98,15 @@ class AuthService:
             raise AuthenticationError("Invalid username or password")
 
         if not admin.is_active:
-            logger.warning("admin_login_failed_disabled_account", username=request.username)
+            logger.warning(
+                "admin_login_failed_disabled_account", username=request.username
+            )
             raise PermissionDeniedError("Admin account has been disabled")
 
         if not verify_password(request.password, admin.password_hash):
-            logger.warning("admin_login_failed_invalid_password", username=request.username)
+            logger.warning(
+                "admin_login_failed_invalid_password", username=request.username
+            )
             raise AuthenticationError("Invalid username or password")
 
         # Generate 8-hour Admin JWT
@@ -158,5 +167,7 @@ class AuthService:
             is_active=True,
         )
 
-        logger.info("admin_bootstrapped", admin_id=str(admin.id), username=admin.username)
+        logger.info(
+            "admin_bootstrapped", admin_id=str(admin.id), username=admin.username
+        )
         return AdminResponse.model_validate(admin)

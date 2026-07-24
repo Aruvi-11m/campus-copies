@@ -8,6 +8,7 @@ Grounding: docs/Database.md §3.2, docs/BackendSpecification.md §5
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.admin import Admin
@@ -19,25 +20,13 @@ class AdminRepository(BaseRepository[Admin]):
         super().__init__(Admin, db)
 
     def get_by_username(self, username: str) -> Optional[Admin]:
-        return (
-            self.db.query(Admin)
-            .filter(Admin.username == username)
-            .first()
-        )
+        return self.db.query(Admin).filter(Admin.username == username).first()
 
     def get_by_id(self, admin_id: uuid.UUID) -> Optional[Admin]:
-        return (
-            self.db.query(Admin)
-            .filter(Admin.id == admin_id)
-            .first()
-        )
+        return self.db.query(Admin).filter(Admin.id == admin_id).first()
 
     def count_active_admins(self) -> int:
-        return (
-            self.db.query(Admin)
-            .filter(Admin.is_active.is_(True))
-            .count()
-        )
+        return self.db.query(Admin).filter(Admin.is_active.is_(True)).count()
 
     def create(
         self,

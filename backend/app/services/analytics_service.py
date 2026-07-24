@@ -1,7 +1,10 @@
+from typing import Dict, List
+
 from sqlalchemy.orm import Session
+
 from app.repositories.analytics_repository import AnalyticsRepository
 from app.schemas.analytics import ChartDataPoint
-from typing import List, Dict
+
 
 class AnalyticsService:
     def __init__(self, repo: AnalyticsRepository):
@@ -16,7 +19,9 @@ class AnalyticsService:
     def get_daily_revenue(self, db: Session, days: int = 30) -> List[ChartDataPoint]:
         return [ChartDataPoint(**x) for x in self.repo.get_daily_revenue(db, days)]
 
-    def get_monthly_revenue(self, db: Session, months: int = 12) -> List[ChartDataPoint]:
+    def get_monthly_revenue(
+        self, db: Session, months: int = 12
+    ) -> List[ChartDataPoint]:
         return [ChartDataPoint(**x) for x in self.repo.get_monthly_revenue(db, months)]
 
     def get_binding_type_usage(self, db: Session) -> List[ChartDataPoint]:

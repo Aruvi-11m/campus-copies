@@ -7,9 +7,11 @@ Grounding: docs/BackendSpecification.md §3, docs/SecuritySpecification.md §2
 
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
+
 import jwt
 from pwdlib import PasswordHash
 from pwdlib.hashers.bcrypt import BcryptHasher
+
 from app.config import settings
 from app.core.errors import AuthenticationError
 from app.core.logging import logger
@@ -32,7 +34,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
-def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+def create_jwt_token(
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """
     Encodes a JWT payload with expiration timestamp.
     """
@@ -43,10 +47,12 @@ def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = 
     else:
         expire = now + timedelta(hours=settings.STUDENT_TOKEN_EXPIRE_HOURS)
 
-    to_encode.update({
-        "iat": int(now.timestamp()),
-        "exp": int(expire.timestamp()),
-    })
+    to_encode.update(
+        {
+            "iat": int(now.timestamp()),
+            "exp": int(expire.timestamp()),
+        }
+    )
 
     return jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 

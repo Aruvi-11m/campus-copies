@@ -9,6 +9,7 @@ import math
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, Union
+
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
@@ -32,7 +33,9 @@ router = APIRouter(prefix="/orders", tags=["Order Management"])
 limiter = Limiter(key_func=get_remote_address)
 
 
-def build_success_response(data: dict, status_code: int = status.HTTP_200_OK) -> JSONResponse:
+def build_success_response(
+    data: dict, status_code: int = status.HTTP_200_OK
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={
@@ -71,7 +74,9 @@ async def create_order(
         copies=body.copies,
     )
     order_data = OrderResponse.from_orm_order(order)
-    return build_success_response(order_data.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
+    return build_success_response(
+        order_data.model_dump(mode="json"), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.get(

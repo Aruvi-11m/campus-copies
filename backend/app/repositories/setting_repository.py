@@ -16,10 +16,18 @@ class SettingRepository:
         return self.db.scalars(stmt).all()
 
     def get_by_key(self, setting_key: str) -> Optional[ApplicationSetting]:
-        stmt = select(ApplicationSetting).where(ApplicationSetting.setting_key == setting_key)
+        stmt = select(ApplicationSetting).where(
+            ApplicationSetting.setting_key == setting_key
+        )
         return self.db.scalars(stmt).first()
 
-    def create(self, setting_key: str, setting_value: Any, description: Optional[str] = None, admin_id: Optional[uuid.UUID] = None) -> ApplicationSetting:
+    def create(
+        self,
+        setting_key: str,
+        setting_value: Any,
+        description: Optional[str] = None,
+        admin_id: Optional[uuid.UUID] = None,
+    ) -> ApplicationSetting:
         setting = ApplicationSetting(
             setting_key=setting_key,
             setting_value=setting_value,
@@ -31,7 +39,13 @@ class SettingRepository:
         self.db.refresh(setting)
         return setting
 
-    def update(self, setting: ApplicationSetting, setting_value: Any, description: Optional[str] = None, admin_id: Optional[uuid.UUID] = None) -> ApplicationSetting:
+    def update(
+        self,
+        setting: ApplicationSetting,
+        setting_value: Any,
+        description: Optional[str] = None,
+        admin_id: Optional[uuid.UUID] = None,
+    ) -> ApplicationSetting:
         setting.setting_value = setting_value
         if description is not None:
             setting.description = description

@@ -9,20 +9,27 @@ import re
 import uuid
 from datetime import datetime
 from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class StudentLoginRequest(BaseModel):
     mobile: str = Field(..., description="10-digit Indian mobile number")
-    full_name: str = Field(..., min_length=1, max_length=100, description="Student full name")
-    department: str = Field(..., min_length=1, max_length=50, description="Department name")
+    full_name: str = Field(
+        ..., min_length=1, max_length=100, description="Student full name"
+    )
+    department: str = Field(
+        ..., min_length=1, max_length=50, description="Department name"
+    )
 
     @field_validator("mobile")
     @classmethod
     def validate_mobile(cls, value: str) -> str:
         cleaned = value.strip()
         if not re.match(r"^[6-9][0-9]{9}$", cleaned):
-            raise ValueError("Mobile number must be a valid 10-digit Indian number starting with 6, 7, 8, or 9")
+            raise ValueError(
+                "Mobile number must be a valid 10-digit Indian number starting with 6, 7, 8, or 9"
+            )
         return cleaned
 
     @field_validator("full_name", "department")
@@ -59,8 +66,12 @@ class StudentProfileResponse(BaseModel):
 
 
 class AdminLoginRequest(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50, description="Admin username")
-    password: str = Field(..., min_length=1, max_length=255, description="Admin password")
+    username: str = Field(
+        ..., min_length=3, max_length=50, description="Admin username"
+    )
+    password: str = Field(
+        ..., min_length=1, max_length=255, description="Admin password"
+    )
 
     @field_validator("username")
     @classmethod

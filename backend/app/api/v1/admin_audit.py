@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -15,9 +15,11 @@ from app.services.audit_service import AuditService
 
 router = APIRouter(prefix="/admin/audit", tags=["Admin Audit"])
 
+
 def get_audit_service(db: Session = Depends(get_db)) -> AuditService:
     repo = AuditRepository(db)
     return AuditService(repo)
+
 
 @router.get("", response_model=PaginatedResponse[AuditLogResponse])
 def get_audit_logs(
@@ -29,7 +31,7 @@ def get_audit_logs(
     resource_type: Optional[str] = None,
     action: Optional[str] = None,
     admin: Admin = Depends(require_admin),
-    service: AuditService = Depends(get_audit_service)
+    service: AuditService = Depends(get_audit_service),
 ):
     logs, total = service.search_logs(
         skip=skip,
@@ -45,14 +47,15 @@ def get_audit_logs(
         total=total,
         page=(skip // limit) + 1,
         size=limit,
-        pages=(total + limit - 1) // limit
+        pages=(total + limit - 1) // limit,
     )
+
 
 @router.get("/{id}", response_model=AuditLogResponse)
 def get_audit_log(
     id: int,
     admin: Admin = Depends(require_admin),
-    service: AuditService = Depends(get_audit_service)
+    service: AuditService = Depends(get_audit_service),
 ):
     log = service.get_log_details(id)
     if not log:

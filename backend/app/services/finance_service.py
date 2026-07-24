@@ -8,27 +8,32 @@ Grounding: docs/BusinessRules.md §5, §9, docs/BackendSpecification.md §4
 
 import uuid
 from datetime import date, datetime, timezone
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import ROUND_HALF_EVEN, Decimal
 from typing import List, Optional, Tuple
+
 from sqlalchemy.orm import Session
 
-from app.core.errors import ConflictError, NotFoundError, PermissionDeniedError, ValidationError
+from app.core.errors import (
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+    ValidationError,
+)
 from app.core.logging import logger
 from app.models.admin import Admin
-from app.models.enums import OrderStatusEnum, PaymentMethodEnum
+from app.models.enums import ActorTypeEnum, OrderStatusEnum, PaymentMethodEnum
 from app.models.expense import Expense
 from app.models.ledger_entry import LedgerEntry
 from app.models.order import Order
 from app.models.payment import Payment
+from app.repositories.audit_repository import AuditRepository
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.order_repository import OrderRepository
 from app.repositories.payment_repository import PaymentRepository
-from app.services.order_service import OrderService
-from app.services.dashboard_service import invalidate_dashboard_cache
 from app.services.audit_service import AuditService
-from app.repositories.audit_repository import AuditRepository
-from app.models.enums import ActorTypeEnum
+from app.services.dashboard_service import invalidate_dashboard_cache
+from app.services.order_service import OrderService
 
 
 class FinanceService:
@@ -77,8 +82,14 @@ class FinanceService:
             )
 
         # BR-PAY: Validate payment amount matches order total
-        order_total = float(Decimal(str(order.total_price)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
-        payment_amount = float(Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
+        order_total = float(
+            Decimal(str(order.total_price)).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_EVEN
+            )
+        )
+        payment_amount = float(
+            Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+        )
         if payment_amount != order_total:
             raise ValidationError(
                 f"Payment amount ₹{payment_amount:.2f} does not match order total ₹{order_total:.2f}"
@@ -103,12 +114,14 @@ class FinanceService:
 
         # Create order status history entry
         from app.models.order_status_history import OrderStatusHistory
+
         history = OrderStatusHistory(
             order_id=order.id,
             from_status=OrderStatusEnum.PENDING_PAYMENT,
             to_status=OrderStatusEnum.PAID,
             admin_id=admin.id,
-            notes=f"Payment verified: {payment_method.value} ₹{payment_amount:.2f}" + (f" - {notes}" if notes else ""),
+            notes=f"Payment verified: {payment_method.value} ₹{payment_amount:.2f}"
+            + (f" - {notes}" if notes else ""),
         )
         self.db.add(history)
 
@@ -118,7 +131,11 @@ class FinanceService:
 
         # Only CASH payments affect physical cash balance
         if payment_method == PaymentMethodEnum.CASH:
-            new_cash_balance = float(Decimal(str(current_cash + payment_amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
+            new_cash_balance = float(
+                Decimal(str(current_cash + payment_amount)).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_EVEN
+                )
+            )
         else:
             new_cash_balance = current_cash
 
@@ -146,7 +163,7 @@ class FinanceService:
                 resource_id=payment.id,
                 new_value={"amount": payment_amount, "method": payment_method.value},
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         logger.info(
@@ -177,14 +194,18 @@ class FinanceService:
             raise NotFoundError(f"Order '{order_id}' was not found")
 
         # Validate refund amount
-        refund_amount = float(Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
+        refund_amount = float(
+            Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+        )
         if refund_amount <= 0:
             raise ValidationError("Refund amount must be positive")
 
         # Determine refund method from order payment method
         payment = self.payment_repo.get_by_order_id(order_id)
         if not payment:
-            raise ConflictError(f"No verified payment found for order '{order.display_id}' to refund")
+            raise ConflictError(
+                f"No verified payment found for order '{order.display_id}' to refund"
+            )
 
         refund_method = payment.payment_method
         entry_type = f"REFUND_{refund_method.value}"
@@ -192,7 +213,11 @@ class FinanceService:
         current_cash = self.ledger_repo.get_latest_cash_balance()
         # Only CASH refunds reduce physical cash balance
         if refund_method == PaymentMethodEnum.CASH:
-            new_cash_balance = float(Decimal(str(current_cash - refund_amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
+            new_cash_balance = float(
+                Decimal(str(current_cash - refund_amount)).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_EVEN
+                )
+            )
         else:
             new_cash_balance = current_cash
 
@@ -218,7 +243,7 @@ class FinanceService:
                 resource_id=payment.id,
                 new_value={"amount": payment_amount, "method": payment_method.value},
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         logger.info(
@@ -245,7 +270,9 @@ class FinanceService:
         Records a new operating expense and creates corresponding immutable ledger entry.
         Cash expenses reduce the cash-in-hand balance.
         """
-        expense_amount = float(Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
+        expense_amount = float(
+            Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+        )
         if expense_amount <= 0:
             raise ValidationError("Expense amount must be positive")
 
@@ -268,7 +295,11 @@ class FinanceService:
 
         # Only CASH expenses reduce physical cash balance
         if payment_method == PaymentMethodEnum.CASH:
-            new_cash_balance = float(Decimal(str(current_cash - expense_amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
+            new_cash_balance = float(
+                Decimal(str(current_cash - expense_amount)).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_EVEN
+                )
+            )
         else:
             new_cash_balance = current_cash
 
@@ -294,7 +325,7 @@ class FinanceService:
                 resource_id=expense.id,
                 new_value={"amount": expense_amount, "category": category},
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         logger.info(
@@ -345,12 +376,14 @@ class FinanceService:
             "net_profit": round(net_profit, 2),
         }
 
-    def get_summary(self, period: str = "daily", target_date: Optional[date] = None) -> dict:
+    def get_summary(
+        self, period: str = "daily", target_date: Optional[date] = None
+    ) -> dict:
         """
         Aggregated financial summary for the specified period.
         Simplified daily summary from ledger entries and payments.
         """
-        from sqlalchemy import func, cast, Date
+        from sqlalchemy import Date, cast, func
 
         summary_date = target_date or date.today()
 
@@ -358,7 +391,8 @@ class FinanceService:
         paid_orders_count = (
             self.db.query(func.count(Payment.id))
             .filter(func.date(Payment.payment_date) == summary_date)
-            .scalar() or 0
+            .scalar()
+            or 0
         )
 
         # Revenue from payments on that date
@@ -368,7 +402,8 @@ class FinanceService:
                 func.date(Payment.payment_date) == summary_date,
                 Payment.payment_method == PaymentMethodEnum.UPI,
             )
-            .scalar() or 0.0
+            .scalar()
+            or 0.0
         )
         cash_revenue = float(
             self.db.query(func.coalesce(func.sum(Payment.amount), 0.0))
@@ -376,15 +411,18 @@ class FinanceService:
                 func.date(Payment.payment_date) == summary_date,
                 Payment.payment_method == PaymentMethodEnum.CASH,
             )
-            .scalar() or 0.0
+            .scalar()
+            or 0.0
         )
         total_revenue = upi_revenue + cash_revenue
 
         # Expenses for that date
-        total_expenses = float(self.expense_repo.sum_expenses_by_method(
-            date_from=summary_date,
-            date_to=summary_date,
-        ))
+        total_expenses = float(
+            self.expense_repo.sum_expenses_by_method(
+                date_from=summary_date,
+                date_to=summary_date,
+            )
+        )
 
         net_profit = total_revenue - total_expenses
         cash_in_hand = self.ledger_repo.get_latest_cash_balance()

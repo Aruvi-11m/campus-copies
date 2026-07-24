@@ -8,6 +8,7 @@ Grounding: docs/Database.md §3.2, docs/DatabaseRelationships.md §2.2
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+
 from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -74,4 +75,6 @@ class Admin(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Admin(id={self.id}, username={self.username}, active={self.is_active})>"
+        return (
+            f"<Admin(id={self.id}, username={self.username}, active={self.is_active})>"
+        )

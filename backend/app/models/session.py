@@ -8,6 +8,7 @@ Grounding: docs/Database.md §3.16, docs/SecuritySpecification.md §2.3
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship

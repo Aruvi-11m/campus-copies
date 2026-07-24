@@ -10,7 +10,17 @@ Grounding: docs/BusinessRules.md §9, docs/Database.md §3.11
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Integer, Numeric, String, Text
+
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -87,4 +97,6 @@ class LedgerEntry(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<LedgerEntry(id={self.id}, type={self.entry_type}, amount={self.amount})>"
+        return (
+            f"<LedgerEntry(id={self.id}, type={self.entry_type}, amount={self.amount})>"
+        )

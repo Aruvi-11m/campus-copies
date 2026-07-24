@@ -7,6 +7,7 @@ Grounding: docs/Database.md §3.1, docs/BackendSpecification.md §5
 
 import uuid
 from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.student import Student
@@ -42,7 +43,9 @@ class StudentRepository(BaseRepository[Student]):
         self.db.refresh(student)
         return student
 
-    def update_profile(self, student: Student, full_name: str, department: str) -> Student:
+    def update_profile(
+        self, student: Student, full_name: str, department: str
+    ) -> Student:
         student.full_name = full_name
         student.department = department
         self.commit()
