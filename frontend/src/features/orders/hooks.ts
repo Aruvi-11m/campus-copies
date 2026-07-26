@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchOrders, fetchOrderById, updateOrderStatus, fetchFileSignedUrl } from './api';
-import { OrderQueryOptions, OrderStatus, PaginatedOrdersResponse, Order } from './types';
+import { OrderQueryOptions, OrderStatus, Order } from './types';
 import toast from 'react-hot-toast';
 
 export const useOrders = (options: OrderQueryOptions) => {

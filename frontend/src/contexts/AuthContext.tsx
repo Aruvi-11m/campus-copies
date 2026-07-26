@@ -16,7 +16,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [admin, setAdmin] = useState<Admin | null>(() => storage.getAdmin());
   const [token, setToken] = useState<string | null>(() => storage.getToken());
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const isLoading = false;
 
   const logout = () => {
     storage.clearAuth();

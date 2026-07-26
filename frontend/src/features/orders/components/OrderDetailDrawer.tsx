@@ -13,7 +13,7 @@ interface OrderDetailDrawerProps {
   onClose: () => void;
 }
 
-const statusOptions: { value: OrderStatus; label: string }[] = [
+export const statusOptions: { value: OrderStatus; label: string }[] = [
   { value: 'PENDING_PAYMENT', label: 'Pending Payment' },
   { value: 'PAID', label: 'Paid' },
   { value: 'PRINTING', label: 'Printing' },

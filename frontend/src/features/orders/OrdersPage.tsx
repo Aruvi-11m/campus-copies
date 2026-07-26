@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useOrders, useOrder } from './hooks';
-import { OrderQueryOptions, Order } from './types';
+import { OrderQueryOptions } from './types';
 import { OrdersTable } from './components/OrdersTable';
 import { OrdersFilterBar } from './components/OrdersFilterBar';
 import { OrderDetailDrawer } from './components/OrderDetailDrawer';
 import { BulkActions } from './components/BulkActions';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 export const OrdersPage: React.FC = () => {
   // Query State
@@ -44,7 +44,7 @@ export const OrdersPage: React.FC = () => {
     }
   };
 
-  const ErrorFallback = ({ error, resetErrorBoundary }: any) => (
+  const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (
     <div className="bg-red-50 p-6 rounded-lg border border-red-200">
       <h2 className="text-red-800 font-semibold mb-2">Failed to render orders module</h2>
       <pre className="text-xs text-red-600 mb-4 overflow-auto">{error.message}</pre>

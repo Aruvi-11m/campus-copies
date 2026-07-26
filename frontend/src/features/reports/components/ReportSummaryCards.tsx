@@ -17,7 +17,7 @@ interface ReportSummaryCardsProps {
   isLoading: boolean;
 }
 
-export const ReportSummaryCards: React.FC<ReportSummaryCardsProps> = ({ metrics, isLoading }) => {
+export const ReportSummaryCards: React.FC<ReportSummaryCardsProps> = ({ metrics, isLoading: _isLoading }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 print:grid-cols-4">
       <StatCard

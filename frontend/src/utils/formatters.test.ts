@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { formatCurrency, formatDate, formatRelativeTime } from './formatters';
 
 describe('formatters', () => {

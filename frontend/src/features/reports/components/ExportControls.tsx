@@ -9,7 +9,7 @@ interface ExportControlsProps {
 }
 
 export const ExportControls: React.FC<ExportControlsProps> = ({ startDate, endDate }) => {
-  const { mutate: exportData, isPending } = useExportData();
+  const { mutate: exportData } = useExportData();
   const [exportingType, setExportingType] = useState<string | null>(null);
 
   const handleExport = (

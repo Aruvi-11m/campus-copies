@@ -17,9 +17,9 @@ export const fetchInventoryItems = async (): Promise<{
 
 export const submitStockTransaction = async (
   request: StockTransactionRequest
-): Promise<{ success: boolean; data: any }> => {
+): Promise<{ success: boolean; data: unknown }> => {
   const token = storage.getToken();
-  return apiRequest<{ success: boolean; data: any }>(`/api/v1/inventory/transactions`, {
+  return apiRequest<{ success: boolean; data: unknown }>(`/api/v1/inventory/transactions`, {
     method: 'POST',
     token,
     body: JSON.stringify(request),

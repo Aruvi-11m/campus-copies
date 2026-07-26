@@ -1,3 +1,5 @@
+import { Admin } from '../types/auth';
+
 const TOKEN_KEY = 'campus_copies_token';
 const ADMIN_KEY = 'campus_copies_admin';
 
@@ -14,7 +16,7 @@ export const storage = {
     }
   },
 
-  getAdmin: (): any | null => {
+  getAdmin: (): Admin | null => {
     const adminStr = localStorage.getItem(ADMIN_KEY) || sessionStorage.getItem(ADMIN_KEY);
     try {
       return adminStr ? JSON.parse(adminStr) : null;
@@ -23,7 +25,7 @@ export const storage = {
     }
   },
 
-  setAdmin: (admin: any, rememberMe: boolean = true): void => {
+  setAdmin: (admin: Admin, rememberMe: boolean = true): void => {
     const adminStr = JSON.stringify(admin);
     if (rememberMe) {
       localStorage.setItem(ADMIN_KEY, adminStr);

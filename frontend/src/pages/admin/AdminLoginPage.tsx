@@ -24,8 +24,9 @@ export const AdminLoginPage: React.FC = () => {
       const data = await adminLogin(username, password);
       login(data, true); // default to remember me
       navigate('/admin');
-    } catch (err: any) {
-      setError(err.message || 'Invalid username or password');
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Invalid username or password';
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
