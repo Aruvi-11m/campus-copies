@@ -10,15 +10,11 @@ describe('Auth API Integration', () => {
     server.use(
       http.post(`${API_BASE_URL}/api/v1/auth/admin/login`, () => {
         return HttpResponse.json({
-          success: true,
-          data: {
-            access_token: 'fake-token-123',
-            token_type: 'bearer',
-            user: {
-              id: '1',
-              email: 'admin@campuscopies.com',
-              role: 'super_admin',
-            },
+          token: 'fake-token-123',
+          admin: {
+            id: '1',
+            username: 'admin@campuscopies.com',
+            full_name: 'Super Admin',
           },
         });
       })
@@ -26,8 +22,8 @@ describe('Auth API Integration', () => {
 
     const result = await adminLogin('admin@campuscopies.com', 'password123');
 
-    expect(result.access_token).toBe('fake-token-123');
-    expect(result.user.email).toBe('admin@campuscopies.com');
+    expect(result.token).toBe('fake-token-123');
+    expect(result.admin.username).toBe('admin@campuscopies.com');
   });
 
   it('adminLogin throws ApiError on invalid credentials', async () => {
