@@ -60,7 +60,9 @@ export const InventoryPage: React.FC = () => {
   const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (
     <div className="bg-red-50 p-6 rounded-lg border border-red-200">
       <h2 className="text-red-800 font-semibold mb-2">Failed to render inventory module</h2>
-      <pre className="text-xs text-red-600 mb-4 overflow-auto">{error.message}</pre>
+      <pre className="text-xs text-red-600 mb-4 overflow-auto">
+        {error instanceof Error ? error.message : String(error)}
+      </pre>
       <button
         onClick={resetErrorBoundary}
         className="bg-red-100 text-red-800 px-4 py-2 rounded-md font-medium hover:bg-red-200"

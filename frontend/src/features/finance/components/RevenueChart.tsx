@@ -56,7 +56,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ summary }) => {
                 border: 'none',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
               }}
-              formatter={(value: number | string | Array<number | string>) => [formatCurrency(Number(value) || 0), 'Revenue']}
+              formatter={(value?: any) => [formatCurrency(Number(value) || 0), 'Revenue']}
             />
             <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
             <Bar

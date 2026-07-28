@@ -53,7 +53,7 @@ export const RevenueChart: React.FC = () => {
                 border: 'none',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
               }}
-              formatter={(value: number | string | Array<number | string>) => [`$${value}`, 'Revenue']}
+              formatter={(value?: any) => [`$${value ?? 0}`, 'Revenue']}
             />
             <Area
               type="monotone"

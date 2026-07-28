@@ -2,6 +2,8 @@ export interface Admin {
   id: string;
   username: string;
   full_name: string;
+  role?: string;
+  avatar_color?: string;
 }
 
 export interface AuthResponse {
